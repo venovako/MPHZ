@@ -19,6 +19,11 @@ MODULE PARAMS
 #else
   INTEGER, PARAMETER :: DWP = KIND(0.0D0)
 #endif
+#ifdef KIND_FILE
+  INTEGER, PARAMETER :: FWP = KIND_FILE
+#else
+  INTEGER, PARAMETER :: FWP = SWP
+#endif
 
   ! Cache line size in bytes.
   ! Valid for Intel CPUs, needs changing for e.g. POWER (128 B).
