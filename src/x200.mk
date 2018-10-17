@@ -6,12 +6,16 @@ ARFLAGS=-qnoipo -lib rsv
 FC=ifort
 CC=icc
 CPUFLAGS=-DUSE_INTEL -DUSE_X200 -fexceptions
+ifdef KIND_SINGLE
+CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
+endif # KIND_SINGLE
+ifdef KIND_DOUBLE
+CPUFLAGS += -DKIND_DOUBLE=$(KIND_DOUBLE)
+endif # KIND_DOUBLE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
 C11FLAGS=$(CPUFLAGS) -DFORTRAN_INTEGER_KIND=8 -std=c11
 ifdef NDEBUG
 OPTFLAGS=-O$(NDEBUG) -xHost
-OPTFFLAGS=$(OPTFLAGS) -DMKL_DIRECT_CALL #-DMKL_DIRECT_CALL_SEQ
-OPTCFLAGS=$(OPTFLAGS)
 DBGFLAGS=-DNDEBUG -qopt-report=5 -traceback -diag-disable=10397
 DBGFFLAGS=$(DBGFLAGS)
 DBGCFLAGS=$(DBGFLAGS) -w3 -diag-disable=1572,2547
@@ -20,8 +24,6 @@ FPUFFLAGS=$(FPUFLAGS)
 FPUCFLAGS=$(FPUFLAGS)
 else # DEBUG
 OPTFLAGS=-O0 -xHost
-OPTFFLAGS=$(OPTFLAGS)
-OPTCFLAGS=$(OPTFLAGS)
 DBGFLAGS=-g -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -traceback -diag-disable=10397
 DBGFFLAGS=$(DBGFLAGS) -debug-parameters all -check all -warn all
 DBGCFLAGS=$(DBGFLAGS) -check=stack,uninit -w3 -diag-disable=1572,2547
@@ -29,8 +31,9 @@ FPUFLAGS=-fp-model strict -fp-stack-check -fma -no-ftz -no-complex-limited-range
 FPUFFLAGS=$(FPUFLAGS) -assume ieee_fpe_flags
 FPUCFLAGS=$(FPUFLAGS)
 endif # ?NDEBUG
-LIBFLAGS=-DUSE_MKL -DMKL_ILP64 -I. -I${MKLROOT}/include/intel64/ilp64 -I${MKLROOT}/include -qopenmp
-LDFLAGS=-L${MKLROOT}/lib/intel64 -Wl,-rpath=${MKLROOT}/lib/intel64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core
-LDFLAGS += -lpthread -lm -ldl -lmemkind
+OPTFFLAGS=$(OPTFLAGS)
+OPTCFLAGS=$(OPTFLAGS)
+LIBFLAGS=-qopenmp
+LDFLAGS=-lpthread -lm -ldl -lmemkind
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
 CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C11FLAGS) $(FPUCFLAGS)

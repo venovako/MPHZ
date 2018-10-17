@@ -16,7 +16,7 @@ endif # KIND_SINGLE
 ifdef KIND_DOUBLE
 CPUFLAGS += -DKIND_DOUBLE=$(KIND_DOUBLE)
 endif # KIND_DOUBLE
-FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fopenmp -fstack-arrays
+FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fstack-arrays
 C11FLAGS=$(CPUFLAGS) -DFORTRAN_INTEGER_KIND=8
 ifeq ($(ARCH),Darwin)
 C11FLAGS += -std=gnu17 -pthread
@@ -42,7 +42,6 @@ endif # ?Darwin
 FPUFLAGS=-ffp-contract=fast
 FPUFFLAGS=$(FPUFLAGS)
 FPUCFLAGS=$(FPUFLAGS) -fno-math-errno
-OPTFFLAGS += -DMKL_DIRECT_CALL #-DMKL_DIRECT_CALL_SEQ
 else # DEBUG
 OPTFLAGS=-Og -march=native
 ifeq ($(ARCH),Darwin)
@@ -59,12 +58,6 @@ FPUFLAGS=-ffp-contract=fast
 FPUFFLAGS=$(FPUFLAGS) -ffpe-trap=invalid,zero,overflow
 FPUCFLAGS=$(FPUFLAGS)
 endif # ?NDEBUG
-LIBFLAGS=-DUSE_MKL -DMKL_ILP64 -I. -I${MKLROOT}/include/intel64/ilp64 -I${MKLROOT}/include
-ifeq ($(ARCH),Darwin)
-LDFLAGS=-L${MKLROOT}/lib -Wl,-rpath,${MKLROOT}/lib -L${MKLROOT}/../compiler/lib -Wl,-rpath,${MKLROOT}/../compiler/lib -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5
-else # Linux
-LDFLAGS=-L${MKLROOT}/lib/intel64 -Wl,-rpath=${MKLROOT}/lib/intel64 -L${MKLROOT}/../compiler/lib/intel64 -Wl,-rpath=${MKLROOT}/../compiler/lib/intel64 -Wl,--no-as-needed -lmkl_gf_ilp64 -lmkl_gnu_thread -lmkl_core
-endif # ?Darwin
-LDFLAGS += -lpthread -lm -ldl
+LDFLAGS=-lpthread -lm -ldl
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
 CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C11FLAGS) $(FPUCFLAGS)
