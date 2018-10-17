@@ -10,6 +10,12 @@ else # Linux
 CC=gcc
 endif # ?Darwin
 CPUFLAGS=-DUSE_GNU -DUSE_X64
+ifdef KIND_SINGLE
+CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
+endif # KIND_SINGLE
+ifdef KIND_DOUBLE
+CPUFLAGS += -DKIND_DOUBLE=$(KIND_DOUBLE)
+endif # KIND_DOUBLE
 FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fopenmp -fstack-arrays
 C11FLAGS=$(CPUFLAGS) -DFORTRAN_INTEGER_KIND=8
 ifeq ($(ARCH),Darwin)
