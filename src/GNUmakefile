@@ -21,11 +21,17 @@ help:
 	@echo 'If NDEBUG is defined, a release build will proceed, with the optimisation level set to $$(NDEBUG).'
 	@echo 'If NDEBUG is not defined, a debug build will proceed.'
 
-libMPHZ.a: params.o $(MKFS)
-	$(AR) $(ARFLAGS) $@ params.o
+libMPHZ.a: params.o jacstr.o xhz.o $(MKFS)
+	$(AR) $(ARFLAGS) $@ params.o jacstr.o xhz.o
 
 params.o params.mod: params.F90 $(MKFS)
 	$(FC) $(FFLAGS) -c params.F90
+
+jacstr.o jacstr.mod: jacstr.F90 params.mod $(MKFS)
+	$(FC) $(FFLAGS) -c jacstr.F90
+
+xhz.o xhz.mod: xhz.F90 xvrotm.F90 xhzl1p.F90 jacstr.mod $(MKFS)
+	$(FC) $(FFLAGS) -c xhz.F90
 
 clean:
 	-$(RM) *.exe
