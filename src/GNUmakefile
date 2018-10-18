@@ -12,7 +12,7 @@ endif # ?CPU
 
 .PHONY: all help clean
 
-all: libMPHZ.a
+all: libMPHZ.a hzl1p.exe
 
 help:
 	@echo '[g]make [CPU=x64|x200] [NDEBUG=0|1|2|3|4|5] [KIND_SINGLE=4|8|10|16] [KIND_DOUBLE=4|8|10|16] [KIND_FILE=4|8|10|16] [all|clean|help]'
@@ -24,6 +24,12 @@ help:
 	@echo 'The output files are written in KIND_SINGLE, i.e., data is transferred from the memory as-is.'
 	@echo 'If NDEBUG is defined, a release build will proceed, with the optimisation level set to $$(NDEBUG).'
 	@echo 'If NDEBUG is not defined, a debug build will proceed.'
+
+hzl1p.exe: hzl1p.o libMPHZ.a $(MKFS)
+	$(FC) $(FFLAGS) hzl1p.o -o$@ -L. -lMPHZ -L../../JACSD -ljstrat $(LDFLAGS)
+
+hzl1p.o: hzl1p.F90 binio.mod xhz.mod $(MKFS)
+	$(FC) $(FFLAGS) -c hzl1p.F90
 
 libMPHZ.a: params.o binio.o jacstr.o xhz.o $(MKFS)
 	$(AR) $(ARFLAGS) $@ params.o binio.o jacstr.o xhz.o
