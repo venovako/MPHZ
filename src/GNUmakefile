@@ -37,7 +37,7 @@ libMPHZ.a: params.o binio.o jacstr.o xhz.o $(MKFS)
 params.o params.mod: params.F90 $(MKFS)
 	$(FC) $(FFLAGS) -c params.F90
 
-binio.o binio.mod: binio.F90 binio.mod $(MKFS)
+binio.o binio.mod: binio.F90 params.mod $(MKFS)
 	$(FC) $(FFLAGS) -c binio.F90
 
 jacstr.o jacstr.mod: jacstr.F90 params.mod $(MKFS)
