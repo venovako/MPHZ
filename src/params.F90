@@ -27,10 +27,20 @@ MODULE PARAMS
 
   ! Cache line size in bytes.
   ! Valid for Intel CPUs, needs changing for e.g. POWER (128 B).
+#ifdef CACHE_LINE_SIZE_B
+  INTEGER, PARAMETER :: CLSIZB = CACHE_LINE_SIZE_B
+#else
   INTEGER, PARAMETER :: CLSIZB = 64
+#endif
+
   ! Max SIMD vector length in bytes.
   ! Valid for Intel AVX-512, otherwise smaller (but >= 16 B).
+#ifdef SIMD_VEC_LEN_B
+  INTEGER, PARAMETER :: SIMDLB = SIMD_VEC_LEN_B
+#else
   INTEGER, PARAMETER :: SIMDLB = 64
+#endif
+
   ! Alignment in bytes = max(cache line size, vector length)
   INTEGER, PARAMETER :: ALIGNB = MAX(CLSIZB, SIMDLB)
 
@@ -48,8 +58,17 @@ MODULE PARAMS
   INTEGER, PARAMETER :: CALIGN = SALIGN / 2
   INTEGER, PARAMETER :: ZALIGN = DALIGN / 2
 
+#ifdef MAX_CORES_PER_RUN
+  INTEGER, PARAMETER :: MAXCPR = MAX_CORES_PER_RUN
+#else
   INTEGER, PARAMETER :: MAXCPR = 96 ! max. number of 2nd-level threads
+#endif
+
+#ifdef MAX_THREADS_PER_CORE
+  INTEGER, PARAMETER :: MAXTPC = MAX_THREADS_PER_CORE
+#else
   INTEGER, PARAMETER :: MAXTPC = 64 ! max. number of 1st-level threads
+#endif
 
   REAL(KIND=SWP), PARAMETER :: S_ZERO  =  0.0E0_SWP
   REAL(KIND=SWP), PARAMETER :: S_ONE   =  1.0E0_SWP
