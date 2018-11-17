@@ -19,7 +19,7 @@ endif # KIND_DOUBLE
 ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
-FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fstack-arrays
+FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fopenmp -fstack-arrays
 C11FLAGS=$(CPUFLAGS) -DFORTRAN_INTEGER_KIND=8
 ifeq ($(ARCH),Darwin)
 C11FLAGS += -std=gnu17 -pthread
