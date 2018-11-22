@@ -32,5 +32,6 @@
 *.app
 
 # Other
+*.dSYM
 *.optrpt
 .svn
