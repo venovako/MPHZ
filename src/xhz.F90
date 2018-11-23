@@ -4,5 +4,5 @@ MODULE XHZ
 
 CONTAINS
 #include "xvrotm.F90"
-#include "xhzl1p.F90"
+#include "xhzl1sa.F90"
 END MODULE XHZ
