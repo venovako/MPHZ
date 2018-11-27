@@ -515,12 +515,12 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
               DTOL(2) = DTOL(1)
               DTOL(1) = DTMP1(1)
            ELSE
-              SY(J) = C_ONE
+              SY(J) = S_ONE
            END IF
         ELSE
            DTOL(2) = D_ZERO
-           EY(J) = C_ZERO
-           SY(J) = C_ZERO
+           EY(J) = S_ZERO
+           SY(J) = S_ZERO
         END IF
 
         !DIR$ VECTOR ALWAYS ALIGNED
@@ -552,13 +552,13 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
               DTOL(1) = DTMP2(1)
            ELSE
               DTOL(4) = D_ONE
-              EW(J) = C_ONE
-              SW(J) = C_ONE
+              EW(J) = S_ONE
+              SW(J) = S_ONE
            END IF
         ELSE
            DTOL(4) = D_ZERO
-           EW(J) = C_ZERO
-           SW(J) = C_ZERO
+           EW(J) = S_ZERO
+           SW(J) = S_ZERO
         END IF
 
         DTOL(3) = DTOL(1) / DTOL(3)
@@ -570,6 +570,10 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
            IF (DTOL(1) .LT. TINY(D_ZERO)) STOP 'XHZL1: Scale of Z underflows.'
            ! overflow
            IF (DTOL(1) .GT. HUGE(D_ZERO)) STOP 'XHZL1: Scale of Z overflows.'
+           DTOL(2) = DTOL(2) / DTOL(1)
+           SY(J) = DTOL(2)
+           DTOL(4) = DTOL(4) / DTOL(1)
+           SW(J) = DTOL(4)
            DO I = 1, N, DSIMDL
               P = MIN(DSIMDL, N-(I-1))
               !DIR$ VECTOR ALWAYS ALIGNED
@@ -578,7 +582,7 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
               END DO
            END DO
         ELSE
-           SS(J) = C_ONE
+           SS(J) = S_ONE
         END IF
      END DO
   END IF
