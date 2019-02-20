@@ -25,11 +25,11 @@ help:
 	@echo 'If NDEBUG is defined, a release build will proceed, with the optimisation level set to $$(NDEBUG).'
 	@echo 'If NDEBUG is not defined, a debug build will proceed.'
 
-hzl1sa.exe: hzl1sa.o libMPHZ.a $(MKFS)
+hzl1sa.exe: hzl1sa.o libMPHZ.a ../../JACSD/libjstrat.a $(MKFS)
 	$(FC) $(FFLAGS) hzl1sa.o -o$@ -L. -lMPHZ -L../../JACSD -ljstrat $(LDFLAGS)
 
 hzl1sa.o: hzl1sa.F90 binio.mod params.mod xhz.mod $(MKFS)
-	$(FC) $(FFLAGS) -c hzl1sa.F90
+	$(FC) $(FFLAGS) -I../../JACSD/jstrat -c hzl1sa.F90
 
 libMPHZ.a: params.o binio.o xhz.o $(MKFS)
 	$(AR) $(ARFLAGS) $@ params.o binio.o xhz.o
