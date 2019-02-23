@@ -452,7 +452,6 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
 
            DO PIX = 1, PPV
               IF (MOD(HZ(PIX),2) .EQ. 0) CYCLE
-              IF (DHZ(PIX) .GT. D_ZERO) SNROT(2) = SNROT(2) + 1
               ! ``global'' pair index
               PAIR = (VEC - 1) * PPV + PIX
               IF (PAIR .LE. NPAIRS) THEN
@@ -477,6 +476,8 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
                     RE_ASPHI(PIX) = RE_ASPHI(PIX) * DTMP2(PIX)
                     IM_ASPHI(PIX) = IM_ASPHI(PIX) * DTMP2(PIX)
                     CPSI(PIX) = CPSI(PIX) * DTMP2(PIX)
+
+                    DHZ(PIX) = D_TWO - SQRT(D_TWO)
                  END IF
                  IF (.NOT. (CPHI(PIX) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_11 overflow or NaN.'
                  DTMP1(PIX) = CPHI(PIX)
@@ -488,6 +489,7 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
                  ZTMP2(PIX) = CMPLX(RE_ASPHI(PIX), IM_ASPHI(PIX), DWP)
                  IF (.NOT. (CPSI(PIX) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_22 overflow or NaN.'
                  DTMP2(PIX) = CPSI(PIX)
+                 IF (DHZ(PIX) .GT. D_ZERO) SNROT(2) = SNROT(2) + 1
                  CALL XVROTM(M, H(1,P), H(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
                  CALL XVROTM(M, S(1,P), S(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
                  CALL XVROTM(N, Z(1,P), Z(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
