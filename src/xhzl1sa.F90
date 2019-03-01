@@ -381,7 +381,50 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
 
            IF (MAXVAL(AV_H_PQ) .GT. HUGE(D_ZERO)) STOP 'XHZL1: |H_pq| overflow.'
 
-           J = SUM(HZ)
+           J = 0
+           DO PIX = 1, PPV
+              IF (PIX .GT. PPV) THEN
+                 HZ(PIX) = 0
+              ELSE IF (HZ(PIX) .EQ. 0) THEN
+                 ! ``global'' pair index
+                 PAIR = (VEC - 1) * PPV + PIX
+                 IF (PAIR .LE. NPAIRS) THEN
+                    P = JSPAIR(1,PAIR,STEP)
+                    Q = JSPAIR(2,PAIR,STEP)
+
+                    IF (RE_S_PP(PIX) .NE. D_ONE) THEN
+                       !DIR$ VECTOR ALWAYS ALIGNED
+                       DO I = 1, M
+                          H(I,P) = H(I,P) * RE_S_PP(PIX)
+                       END DO
+                       !DIR$ VECTOR ALWAYS ALIGNED
+                       DO I = 1, M
+                          S(I,P) = S(I,P) * RE_S_PP(PIX)
+                       END DO
+                       !DIR$ VECTOR ALWAYS ALIGNED
+                       DO I = 1, N
+                          Z(I,P) = Z(I,P) * RE_S_PP(PIX)
+                       END DO
+                    END IF
+                    IF (RE_S_QQ(PIX) .NE. D_ONE) THEN
+                       !DIR$ VECTOR ALWAYS ALIGNED
+                       DO I = 1, M
+                          H(I,Q) = H(I,Q) * RE_S_QQ(PIX)
+                       END DO
+                       !DIR$ VECTOR ALWAYS ALIGNED
+                       DO I = 1, M
+                          S(I,Q) = S(I,Q) * RE_S_QQ(PIX)
+                       END DO
+                       !DIR$ VECTOR ALWAYS ALIGNED
+                       DO I = 1, N
+                          Z(I,Q) = Z(I,Q) * RE_S_QQ(PIX)
+                       END DO
+                    END IF
+                 END IF
+              ELSE
+                 J = J + HZ(PIX)
+              END IF
+           END DO
            IF (J .EQ. 0) CYCLE
 #ifndef NDEBUG
            IF (J .LT. 0) STOP 'XHZL1: SNROT < 0'
@@ -479,6 +522,7 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
 
                     DHZ(PIX) = D_TWO - SQRT(D_TWO)
                  END IF
+                 ! form the transformation
                  IF (.NOT. (CPHI(PIX) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_11 overflow or NaN.'
                  DTMP1(PIX) = CPHI(PIX)
                  IF (.NOT. (ABS(RE_MBSPSI(PIX)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_21)| overflow or NaN.'
@@ -490,6 +534,7 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
                  IF (.NOT. (CPSI(PIX) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_22 overflow or NaN.'
                  DTMP2(PIX) = CPSI(PIX)
                  IF (DHZ(PIX) .GT. D_ZERO) SNROT(2) = SNROT(2) + 1
+                 ! apply the transformation
                  CALL XVROTM(M, H(1,P), H(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
                  CALL XVROTM(M, S(1,P), S(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
                  CALL XVROTM(N, Z(1,P), Z(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
@@ -507,108 +552,106 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
 
   ! Scaling of H,S,Z.
 
-  IF (NROT(1) .GT. 0) THEN
-     DO J = 1, N
+  DO J = 1, N
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DTMP1 = D_ZERO
+
+     DO I = 1, M, DSIMDL
+        P = MIN(DSIMDL, M-(I-1))
         !DIR$ VECTOR ALWAYS ALIGNED
-        DTMP1 = D_ZERO
-
-        DO I = 1, M, DSIMDL
-           P = MIN(DSIMDL, M-(I-1))
-           !DIR$ VECTOR ALWAYS ALIGNED
-           DO L = 1, P
-              ZTMP1(L) = H(I+(L-1),J)
-              DTMP1(L) = DTMP1(L) + JVEC(I+(L-1)) * (REAL(ZTMP1(L))*REAL(ZTMP1(L)) + AIMAG(ZTMP1(L))*AIMAG(ZTMP1(L)))
-           END DO
+        DO L = 1, P
+           ZTMP1(L) = H(I+(L-1),J)
+           DTMP1(L) = DTMP1(L) + JVEC(I+(L-1)) * (REAL(ZTMP1(L))*REAL(ZTMP1(L)) + AIMAG(ZTMP1(L))*AIMAG(ZTMP1(L)))
         END DO
-        DTOL(1) = SUM(DTMP1)
-        IF (DTOL(1) .NE. D_ZERO) THEN
-           EY(J) = DTOL(1)
-           DTOL(2) = ABS(DTOL(1))
-           IF (DTOL(2) .NE. D_ONE) THEN
-              DTMP1(1) = DTOL(1)
-              DTOL(1) = SQRT(DTOL(2))
-              SY(J) = DTOL(1)
-              DO I = 1, M, DSIMDL
-                 P = MIN(DSIMDL, M-(I-1))
-                 !DIR$ VECTOR ALWAYS ALIGNED
-                 DO L = 1, P
-                    H(I+(L-1),J) = H(I+(L-1),J) / DTOL(1)
-                 END DO
-              END DO
-              DTOL(2) = DTOL(1)
-              DTOL(1) = DTMP1(1)
-           ELSE
-              SY(J) = S_ONE
-           END IF
-        ELSE
-           DTOL(2) = D_ZERO
-           EY(J) = S_ZERO
-           SY(J) = S_ZERO
-        END IF
-
-        !DIR$ VECTOR ALWAYS ALIGNED
-        DTMP2 = D_ZERO
-
-        DO I = 1, M, DSIMDL
-           P = MIN(DSIMDL, M-(I-1))
-           !DIR$ VECTOR ALWAYS ALIGNED
-           DO L = 1, P
-              ZTMP2(L) = S(I+(L-1),J)
-              DTMP2(L) = DTMP2(L) + (REAL(ZTMP2(L))*REAL(ZTMP2(L)) + AIMAG(ZTMP2(L))*AIMAG(ZTMP2(L)))
-           END DO
-        END DO
-        DTOL(3) = SUM(DTMP2)
-        IF (DTOL(3) .NE. D_ZERO) THEN
-           IF (DTOL(3) .NE. D_ONE) THEN
-              EW(J) = DTOL(3)
-              DTMP2(1) = DTOL(1)
-              DTOL(1) = SQRT(DTOL(3))
-              SW(J) = DTOL(1)
-              DO I = 1, M, DSIMDL
-                 P = MIN(DSIMDL, M-(I-1))
-                 !DIR$ VECTOR ALWAYS ALIGNED
-                 DO L = 1, P
-                    S(I+(L-1),J) = S(I+(L-1),J) / DTOL(1)
-                 END DO
-              END DO
-              DTOL(4) = DTOL(1)
-              DTOL(1) = DTMP2(1)
-           ELSE
-              DTOL(4) = D_ONE
-              EW(J) = S_ONE
-              SW(J) = S_ONE
-           END IF
-        ELSE
-           DTOL(4) = D_ZERO
-           EW(J) = S_ZERO
-           SW(J) = S_ZERO
-        END IF
-
-        DTOL(3) = DTOL(1) / DTOL(3)
-        EE(J) = DTOL(3)
-        DTOL(1) = HYPOT(DTOL(2), DTOL(4))
-        IF (DTOL(1) .NE. D_ONE) THEN
-           SS(J) = DTOL(1)
-           ! underflow
-           IF (DTOL(1) .LT. TINY(D_ZERO)) STOP 'XHZL1: Scale of Z underflows.'
-           ! overflow
-           IF (DTOL(1) .GT. HUGE(D_ZERO)) STOP 'XHZL1: Scale of Z overflows.'
-           DTOL(2) = DTOL(2) / DTOL(1)
-           SY(J) = DTOL(2)
-           DTOL(4) = DTOL(4) / DTOL(1)
-           SW(J) = DTOL(4)
-           DO I = 1, N, DSIMDL
-              P = MIN(DSIMDL, N-(I-1))
+     END DO
+     DTOL(1) = SUM(DTMP1)
+     IF (DTOL(1) .NE. D_ZERO) THEN
+        EY(J) = DTOL(1)
+        DTOL(2) = ABS(DTOL(1))
+        IF (DTOL(2) .NE. D_ONE) THEN
+           DTMP1(1) = DTOL(1)
+           DTOL(1) = SQRT(DTOL(2))
+           SY(J) = DTOL(1)
+           DO I = 1, M, DSIMDL
+              P = MIN(DSIMDL, M-(I-1))
               !DIR$ VECTOR ALWAYS ALIGNED
               DO L = 1, P
-                 Z(I+(L-1),J) = Z(I+(L-1),J) / DTOL(1)
+                 H(I+(L-1),J) = H(I+(L-1),J) / DTOL(1)
               END DO
            END DO
+           DTOL(2) = DTOL(1)
+           DTOL(1) = DTMP1(1)
         ELSE
-           SS(J) = S_ONE
+           SY(J) = S_ONE
         END IF
+     ELSE
+        DTOL(2) = D_ZERO
+        EY(J) = S_ZERO
+        SY(J) = S_ZERO
+     END IF
+
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DTMP2 = D_ZERO
+
+     DO I = 1, M, DSIMDL
+        P = MIN(DSIMDL, M-(I-1))
+        !DIR$ VECTOR ALWAYS ALIGNED
+        DO L = 1, P
+           ZTMP2(L) = S(I+(L-1),J)
+           DTMP2(L) = DTMP2(L) + (REAL(ZTMP2(L))*REAL(ZTMP2(L)) + AIMAG(ZTMP2(L))*AIMAG(ZTMP2(L)))
+        END DO
      END DO
-  END IF
+     DTOL(3) = SUM(DTMP2)
+     IF (DTOL(3) .NE. D_ZERO) THEN
+        IF (DTOL(3) .NE. D_ONE) THEN
+           EW(J) = DTOL(3)
+           DTMP2(1) = DTOL(1)
+           DTOL(1) = SQRT(DTOL(3))
+           SW(J) = DTOL(1)
+           DO I = 1, M, DSIMDL
+              P = MIN(DSIMDL, M-(I-1))
+              !DIR$ VECTOR ALWAYS ALIGNED
+              DO L = 1, P
+                 S(I+(L-1),J) = S(I+(L-1),J) / DTOL(1)
+              END DO
+           END DO
+           DTOL(4) = DTOL(1)
+           DTOL(1) = DTMP2(1)
+        ELSE
+           DTOL(4) = D_ONE
+           EW(J) = S_ONE
+           SW(J) = S_ONE
+        END IF
+     ELSE
+        DTOL(4) = D_ZERO
+        EW(J) = S_ZERO
+        SW(J) = S_ZERO
+     END IF
+
+     DTOL(3) = DTOL(1) / DTOL(3)
+     EE(J) = DTOL(3)
+     DTOL(1) = HYPOT(DTOL(2), DTOL(4))
+     IF (DTOL(1) .NE. D_ONE) THEN
+        SS(J) = DTOL(1)
+        ! underflow
+        IF (DTOL(1) .LT. TINY(D_ZERO)) STOP 'XHZL1: Scale of Z underflows.'
+        ! overflow
+        IF (DTOL(1) .GT. HUGE(D_ZERO)) STOP 'XHZL1: Scale of Z overflows.'
+        DTOL(2) = DTOL(2) / DTOL(1)
+        SY(J) = DTOL(2)
+        DTOL(4) = DTOL(4) / DTOL(1)
+        SW(J) = DTOL(4)
+        DO I = 1, N, DSIMDL
+           P = MIN(DSIMDL, N-(I-1))
+           !DIR$ VECTOR ALWAYS ALIGNED
+           DO L = 1, P
+              Z(I+(L-1),J) = Z(I+(L-1),J) / DTOL(1)
+           END DO
+        END DO
+     ELSE
+        SS(J) = S_ONE
+     END IF
+  END DO
 
 #ifndef NDEBUG
   DO L = 1, 5
