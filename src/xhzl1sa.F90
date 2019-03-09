@@ -385,42 +385,6 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
            DO PIX = 1, PPV
               IF (PIX .GT. PPV) THEN
                  HZ(PIX) = 0
-              ! ELSE IF (HZ(PIX) .EQ. 0) THEN
-              !    ! ``global'' pair index
-              !    PAIR = (VEC - 1) * PPV + PIX
-              !    IF (PAIR .LE. NPAIRS) THEN
-              !       P = JSPAIR(1,PAIR,STEP)
-              !       Q = JSPAIR(2,PAIR,STEP)
-
-              !       IF (RE_S_PP(PIX) .NE. D_ONE) THEN
-              !          !DIR$ VECTOR ALWAYS ALIGNED
-              !          DO I = 1, M
-              !             H(I,P) = H(I,P) * RE_S_PP(PIX)
-              !          END DO
-              !          !DIR$ VECTOR ALWAYS ALIGNED
-              !          DO I = 1, M
-              !             S(I,P) = S(I,P) * RE_S_PP(PIX)
-              !          END DO
-              !          !DIR$ VECTOR ALWAYS ALIGNED
-              !          DO I = 1, N
-              !             Z(I,P) = Z(I,P) * RE_S_PP(PIX)
-              !          END DO
-              !       END IF
-              !       IF (RE_S_QQ(PIX) .NE. D_ONE) THEN
-              !          !DIR$ VECTOR ALWAYS ALIGNED
-              !          DO I = 1, M
-              !             H(I,Q) = H(I,Q) * RE_S_QQ(PIX)
-              !          END DO
-              !          !DIR$ VECTOR ALWAYS ALIGNED
-              !          DO I = 1, M
-              !             S(I,Q) = S(I,Q) * RE_S_QQ(PIX)
-              !          END DO
-              !          !DIR$ VECTOR ALWAYS ALIGNED
-              !          DO I = 1, N
-              !             Z(I,Q) = Z(I,Q) * RE_S_QQ(PIX)
-              !          END DO
-              !       END IF
-              !    END IF
               ELSE
                  J = J + HZ(PIX)
               END IF
@@ -535,9 +499,14 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
                  DTMP2(PIX) = CPSI(PIX)
                  IF (DHZ(PIX) .GT. D_ZERO) SNROT(2) = SNROT(2) + 1
                  ! apply the transformation
-                 CALL XVROTM(M, H(1,P), H(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
-                 CALL XVROTM(M, S(1,P), S(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
-                 CALL XVROTM(N, Z(1,P), Z(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
+                 IF ((DTMP1(PIX) .NE. D_ONE) .OR. (DTMP2(PIX) .NE. D_ONE) .OR. &
+                      (ZTMP1(PIX) .NE. Z_ZERO) .OR. (ZTMP2(PIX) .NE. Z_ZERO)) THEN
+                    CALL XVROTM(M, H(1,P), H(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
+                    CALL XVROTM(M, S(1,P), S(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
+                    CALL XVROTM(N, Z(1,P), Z(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
+                 ELSE ! identity
+                    SNROT(1) = SNROT(1) - 1
+                 END IF
               END IF
            END DO
         END DO
