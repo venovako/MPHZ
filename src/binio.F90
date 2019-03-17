@@ -139,6 +139,7 @@ CONTAINS
 
     CHARACTER(LEN=IOMSGLEN) :: MSG
     INTEGER :: I
+    REAL(KIND=FWP) :: R
 
     IF (N .LT. 0) THEN
        INFO = -2
@@ -148,7 +149,8 @@ CONTAINS
     IF (INFO .NE. 0) RETURN
 
     DO I = 1, N
-       WRITE (UNIT=U, IOSTAT=INFO, IOMSG=MSG, ERR=5) A(I)
+       R = REAL(A(I), FWP)
+       WRITE (UNIT=U, IOSTAT=INFO, IOMSG=MSG, ERR=5) R
     END DO
     RETURN
 5   WRITE (ULOG,'(2A)') 'BIO_WRITE_S1:', TRIM(MSG)
@@ -162,6 +164,7 @@ CONTAINS
 
     CHARACTER(LEN=IOMSGLEN) :: MSG
     INTEGER :: I, J
+    COMPLEX(KIND=FWP) :: Z
 
     IF (M .LT. 0) THEN
        INFO = -2
@@ -176,7 +179,8 @@ CONTAINS
 
     DO J = 1, N
        DO I = 1, M
-          WRITE (UNIT=U, IOSTAT=INFO, IOMSG=MSG, ERR=6) A(I,J)
+          Z = CMPLX(REAL(A(I,J)), AIMAG(A(I,J)), FWP)
+          WRITE (UNIT=U, IOSTAT=INFO, IOMSG=MSG, ERR=6) Z
        END DO
     END DO
     RETURN
