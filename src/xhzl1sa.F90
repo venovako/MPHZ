@@ -1,84 +1,85 @@
 ! L1 double complex HZ (parallel, vectorized).
-SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
+SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,CPR,&
      EE,EY,EW, SY,SW,SS, NROT,INFO)
 #ifndef NDEBUG
   USE, INTRINSIC :: IEEE_ARITHMETIC
   USE, INTRINSIC :: IEEE_FEATURES
   USE, INTRINSIC :: ISO_C_BINDING
 #endif
+  USE OMP_LIB
   IMPLICIT NONE
 
-  INTEGER, INTENT(IN) :: M,N, LDH,LDS,LDZ, JVEC(M), JS(JSMLEX),JSPAIR(2,JS(JSMLEX),JS(JSMLEX-1)), NSWP
+  INTEGER, INTENT(IN) :: M,N, LDH,LDS,LDZ, JVEC(M), JS(JSMLEX),JSPAIR(2,JS(JSMLEX),JS(JSMLEX-1)), NSWP,CPR
   COMPLEX(KIND=SWP), INTENT(INOUT) :: H(LDH,N),S(LDS,N),Z(LDZ,N)
   REAL(KIND=SWP), INTENT(OUT) :: EE(N),EY(N),EW(N), SY(N),SW(N),SS(N)
   INTEGER, INTENT(OUT) :: NROT(2),INFO
 
-  INTEGER :: SNROT(2)
-  REAL(KIND=DWP) :: DTOL(4)
-  !DIR$ ATTRIBUTES ALIGN:ALIGNB :: SNROT, DTOL
-
   ! vector variables
 
-  INTEGER :: HZ(ISIMDL)
-  REAL(KIND=DWP) :: DHZ(DSIMDL)
+  INTEGER :: HZ(ISIMDL,CPR)
+  REAL(KIND=DWP) :: DHZ(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: HZ, DHZ
 
-  REAL(KIND=DWP) :: RE_H_PP(DSIMDL)
-  REAL(KIND=DWP) :: RE_H_QQ(DSIMDL)
-  REAL(KIND=DWP) :: RE_H_PQ(DSIMDL)
-  REAL(KIND=DWP) :: IM_H_PQ(DSIMDL)
-  REAL(KIND=DWP) :: AV_H_PQ(DSIMDL)
-  REAL(KIND=DWP) :: CA_H_PQ(DSIMDL)
-  REAL(KIND=DWP) :: SA_H_PQ(DSIMDL)
+  REAL(KIND=DWP) :: RE_H_PP(DSIMDL,CPR)
+  REAL(KIND=DWP) :: RE_H_QQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: RE_H_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: IM_H_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: AV_H_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: CA_H_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: SA_H_PQ(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: RE_H_PP,RE_H_QQ,RE_H_PQ,IM_H_PQ, AV_H_PQ,CA_H_PQ,SA_H_PQ
 
-  REAL(KIND=DWP) :: RE_S_PP(DSIMDL)
-  REAL(KIND=DWP) :: RE_S_QQ(DSIMDL)
-  REAL(KIND=DWP) :: RE_S_PQ(DSIMDL)
-  REAL(KIND=DWP) :: IM_S_PQ(DSIMDL)
-  REAL(KIND=DWP) :: AV_S_PQ(DSIMDL)
-  REAL(KIND=DWP) :: CA_S_PQ(DSIMDL)
-  REAL(KIND=DWP) :: SA_S_PQ(DSIMDL)  
+  REAL(KIND=DWP) :: RE_S_PP(DSIMDL,CPR)
+  REAL(KIND=DWP) :: RE_S_QQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: RE_S_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: IM_S_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: AV_S_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: CA_S_PQ(DSIMDL,CPR)
+  REAL(KIND=DWP) :: SA_S_PQ(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: RE_S_PP,RE_S_QQ,RE_S_PQ,IM_S_PQ, AV_S_PQ,CA_S_PQ,SA_S_PQ
 
-  REAL(KIND=DWP) :: T(DSIMDL)
-  REAL(KIND=DWP) :: U(DSIMDL)
-  REAL(KIND=DWP) :: V(DSIMDL)
-  REAL(KIND=DWP) :: E(DSIMDL)
+  REAL(KIND=DWP) :: T(DSIMDL,CPR)
+  REAL(KIND=DWP) :: U(DSIMDL,CPR)
+  REAL(KIND=DWP) :: V(DSIMDL,CPR)
+  REAL(KIND=DWP) :: E(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: T,U,V,E
 
-  REAL(KIND=DWP) :: TG(DSIMDL)
-  REAL(KIND=DWP) :: CG(DSIMDL)
-  REAL(KIND=DWP) :: SG(DSIMDL)
+  REAL(KIND=DWP) :: TG(DSIMDL,CPR)
+  REAL(KIND=DWP) :: CG(DSIMDL,CPR)
+  REAL(KIND=DWP) :: SG(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: TG,CG,SG
 
-  REAL(KIND=DWP) :: T2T(DSIMDL)
-  REAL(KIND=DWP) :: C2T(DSIMDL)
-  REAL(KIND=DWP) :: S2T(DSIMDL)
+  REAL(KIND=DWP) :: T2T(DSIMDL,CPR)
+  REAL(KIND=DWP) :: C2T(DSIMDL,CPR)
+  REAL(KIND=DWP) :: S2T(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: T2T,C2T,S2T
 
-  REAL(KIND=DWP) :: CPHI(DSIMDL)
-  REAL(KIND=DWP) :: CPSI(DSIMDL)
-  REAL(KIND=DWP) :: RE_ASPHI(DSIMDL)
-  REAL(KIND=DWP) :: IM_ASPHI(DSIMDL)
-  REAL(KIND=DWP) :: RE_MBSPSI(DSIMDL)
-  REAL(KIND=DWP) :: IM_MBSPSI(DSIMDL)
+  REAL(KIND=DWP) :: CPHI(DSIMDL,CPR)
+  REAL(KIND=DWP) :: CPSI(DSIMDL,CPR)
+  REAL(KIND=DWP) :: RE_ASPHI(DSIMDL,CPR)
+  REAL(KIND=DWP) :: IM_ASPHI(DSIMDL,CPR)
+  REAL(KIND=DWP) :: RE_MBSPSI(DSIMDL,CPR)
+  REAL(KIND=DWP) :: IM_MBSPSI(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: CPHI,CPSI, RE_ASPHI,IM_ASPHI, RE_MBSPSI,IM_MBSPSI
 
-  COMPLEX(KIND=DWP) :: ZTMP1(DSIMDL)
-  COMPLEX(KIND=DWP) :: ZTMP2(DSIMDL)
+  COMPLEX(KIND=DWP) :: ZTMP1(DSIMDL,CPR)
+  COMPLEX(KIND=DWP) :: ZTMP2(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: ZTMP1,ZTMP2
 
-  REAL(KIND=DWP) :: DTMP1(DSIMDL)
-  REAL(KIND=DWP) :: DTMP2(DSIMDL)
-  REAL(KIND=DWP) :: DTMP3(DSIMDL)
-  REAL(KIND=DWP) :: DTMP4(DSIMDL)
+  REAL(KIND=DWP) :: DTMP1(DSIMDL,CPR)
+  REAL(KIND=DWP) :: DTMP2(DSIMDL,CPR)
+  REAL(KIND=DWP) :: DTMP3(DSIMDL,CPR)
+  REAL(KIND=DWP) :: DTMP4(DSIMDL,CPR)
   !DIR$ ATTRIBUTES ALIGN:ALIGNB :: DTMP1,DTMP2,DTMP3,DTMP4
+
+  INTEGER :: SNROT(2), LNROT(2)
+  REAL(KIND=DWP) :: DTOL
+  !DIR$ ATTRIBUTES ALIGN:ALIGNB :: SNROT, DTOL
 
   INTEGER :: NSTEPS, NPAIRS
   INTEGER :: PPV, VPS
-  INTEGER :: SWEEP, STEP, VEC, PIX, PAIR
-  INTEGER :: P, Q, I, J, L
+  INTEGER :: SWEEP, STEP, VEC
+  INTEGER :: PIX,PAIR, P,Q,R, I,J,L
 #ifndef NDEBUG
   LOGICAL(c_int) :: LFHALT(5)
 #endif
@@ -117,6 +118,10 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
      INFO = -9
   ELSE IF (NSWP .LT. 0) THEN
      INFO = -12
+  ELSE IF (CPR .LT. 1) THEN
+     INFO = -13
+  ELSE IF (CPR .GT. MAXCPR) THEN
+     INFO = -13
   ELSE
      INFO = 0
   END IF
@@ -137,7 +142,7 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
   CALL IEEE_SET_HALTING_MODE(IEEE_INEXACT, .FALSE._c_int)
 #endif
 
-  DTOL(1) = SCALE(EPSILON(D_ONE), -1) * SQRT(REAL(M, DWP))
+  DTOL = SCALE(EPSILON(D_ONE), -1) * SQRT(REAL(M, DWP))
 
   NSTEPS = JS(JSMLEX-1)
   NPAIRS = JS(JSMLEX)
@@ -146,53 +151,108 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
   ! vectors per step
   VPS = (NPAIRS + (PPV - 1)) / PPV
 
-  !DIR$ VECTOR ALWAYS ALIGNED
-  Z = Z_ZERO
+  !$OMP PARALLEL DO DEFAULT(NONE) PRIVATE(J,I) SHARED(Z,N)
   DO J = 1, N
+     !$DIR VECTOR ALWAYS ALIGNED
+     DO I = 1, J-1
+        Z(I,J) = Z_ZERO
+     END DO
      Z(J,J) = Z_ONE
+     !$DIR VECTOR ALWAYS
+     DO I = J+1, N
+        Z(I,J) = Z_ZERO
+     END DO
   END DO
+  !$OMP END PARALLEL DO
 
   DO SWEEP = 1, NSWP
      !DIR$ VECTOR ALWAYS ALIGNED
      SNROT = 0
      DO STEP = 1, NSTEPS
+        !DIR$ VECTOR ALWAYS ALIGNED
+        LNROT = 0
+        !$OMP  PARALLEL DEFAULT(NONE) REDUCTION(+:LNROT) PRIVATE(VEC,I,J,L,P,Q,R,PIX,PAIR) &
+        !$OMP& SHARED(M,N,H,LDH,S,LDS,Z,LDZ,JVEC,DTOL,NPAIRS,JS,JSPAIR,STEP,PPV,VPS, HZ,DHZ, &
+        !$OMP& RE_H_PP,RE_H_QQ,RE_H_PQ,IM_H_PQ,AV_H_PQ,CA_H_PQ,SA_H_PQ,RE_S_PP,RE_S_QQ,RE_S_PQ,IM_S_PQ,AV_S_PQ,CA_S_PQ,SA_S_PQ,&
+        !$OMP& T,U,V,E,TG,CG,SG,T2T,C2T,S2T,CPHI,CPSI,RE_ASPHI,IM_ASPHI,RE_MBSPSI,IM_MBSPSI,ZTMP1,ZTMP2,DTMP1,DTMP2,DTMP3,DTMP4)
+        !DIR$ VECTOR ALWAYS ALIGNED
+        LNROT = 0
+        !$OMP DO
         DO VEC = 1, VPS
+           R = INT(OMP_GET_THREAD_NUM()) + 1
+
            !DIR$ VECTOR ALWAYS ALIGNED
-           HZ = 0
+           DO I = 1, ISIMDL
+              HZ(I,R) = 0
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           DHZ = D_ZERO
+           DO I = 1, DSIMDL
+              DHZ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           RE_S_PP = D_ONE
+           DO I = 1, DSIMDL
+              RE_S_PP(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           RE_S_QQ = D_ONE
+           DO I = 1, DSIMDL
+              RE_S_QQ(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           RE_S_PQ = D_ZERO
-           !DIR$ VECTOR ALWAYS ALIGNED  
-           IM_S_PQ = D_ZERO
+           DO I = 1, DSIMDL
+              RE_S_PQ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           AV_S_PQ = D_ZERO
+           DO I = 1, DSIMDL
+              IM_S_PQ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           CA_S_PQ = D_ONE
+           DO I = 1, DSIMDL
+              AV_S_PQ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           SA_S_PQ = D_ONE
+           DO I = 1, DSIMDL
+              CA_S_PQ(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           RE_H_PP = D_ONE
+           DO I = 1, DSIMDL
+              SA_S_PQ(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           RE_H_QQ = D_ONE
+           DO I = 1, DSIMDL
+              RE_H_PP(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           RE_H_PQ = D_ZERO
+           DO I = 1, DSIMDL
+              RE_H_QQ(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           IM_H_PQ = D_ZERO
+           DO I = 1, DSIMDL
+              RE_H_PQ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           AV_H_PQ = D_ZERO
+           DO I = 1, DSIMDL
+              IM_H_PQ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           CA_H_PQ = D_ONE
+           DO I = 1, DSIMDL
+              AV_H_PQ(I,R) = D_ZERO
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           SA_H_PQ = D_ONE
+           DO I = 1, DSIMDL
+              CA_H_PQ(I,R) = D_ONE
+           END DO
            !DIR$ VECTOR ALWAYS ALIGNED
-           SG = D_ONE
-           !DIR$ VECTOR ALWAYS ASSERT,ALIGNED
-           S2T = D_ONE
+           DO I = 1, DSIMDL
+              SA_H_PQ(I,R) = D_ONE
+           END DO
+           !DIR$ VECTOR ALWAYS ALIGNED
+           DO I = 1, DSIMDL
+              SG(I,R) = D_ONE
+           END DO
+           !DIR$ VECTOR ALWAYS ALIGNED
+           DO I = 1, DSIMDL
+              S2T(I,R) = D_ONE
+           END DO
 
            ! compute the dot products
 
@@ -206,144 +266,171 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
 
                  ! S
 
-                 RE_S_PP(PIX) = D_ZERO
-                 RE_S_QQ(PIX) = D_ZERO
-                 RE_S_PQ(PIX) = D_ZERO
-                 IM_S_PQ(PIX) = D_ZERO
+                 RE_S_PP(PIX,R) = D_ZERO
+                 RE_S_QQ(PIX,R) = D_ZERO
+                 RE_S_PQ(PIX,R) = D_ZERO
+                 IM_S_PQ(PIX,R) = D_ZERO
 
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP1 = D_ZERO ! RE_S_PP
+                 DO I = 1, DSIMDL
+                    DTMP1(I,R) = D_ZERO ! RE_S_PP
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP2 = D_ZERO ! RE_S_QQ
+                 DO I = 1, DSIMDL
+                    DTMP2(I,R) = D_ZERO ! RE_S_QQ
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP3 = D_ZERO ! RE_S_PQ
+                 DO I = 1, DSIMDL
+                    DTMP3(I,R) = D_ZERO ! RE_S_PQ
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP4 = D_ZERO ! IM_S_PQ
+                 DO I = 1, DSIMDL
+                    DTMP4(I,R) = D_ZERO ! IM_S_PQ
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 ZTMP1 = Z_ZERO ! ZP
+                 DO I = 1, DSIMDL
+                    ZTMP1(I,R) = Z_ZERO ! ZP
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 ZTMP2 = Z_ZERO ! ZQ
+                 DO I = 1, DSIMDL
+                    ZTMP2(I,R) = Z_ZERO ! ZQ
+                 END DO
 
                  DO I = 1, M, DSIMDL
                     L = MIN(DSIMDL, M-(I-1))
                     !DIR$ VECTOR ALWAYS ALIGNED
                     DO J = 1, L
-                       ZTMP1(J) = S(I+(J-1),P)
-                       ZTMP2(J) = S(I+(J-1),Q)
-                       DTMP1(J) = DTMP1(J) + (REAL(ZTMP1(J))*REAL(ZTMP1(J)) + AIMAG(ZTMP1(J))*AIMAG(ZTMP1(J)))
-                       DTMP2(J) = DTMP2(J) + (REAL(ZTMP2(J))*REAL(ZTMP2(J)) + AIMAG(ZTMP2(J))*AIMAG(ZTMP2(J)))
-                       DTMP3(J) = DTMP3(J) + (REAL(ZTMP1(J))*REAL(ZTMP2(J)) + AIMAG(ZTMP1(J))*AIMAG(ZTMP2(J)))
-                       DTMP4(J) = DTMP4(J) + (REAL(ZTMP1(J))*AIMAG(ZTMP2(J))- AIMAG(ZTMP1(J))*REAL(ZTMP2(J)))
+                       ZTMP1(J,R) = S(I+(J-1),P)
+                       ZTMP2(J,R) = S(I+(J-1),Q)
+                       !DBLE(DCONJG(ZTMP1(J))*ZTMP1(J))
+                       DTMP1(J,R) = DTMP1(J,R) + (REAL(ZTMP1(J,R))*REAL(ZTMP1(J,R)) + AIMAG(ZTMP1(J,R))*AIMAG(ZTMP1(J,R)))
+                       !DBLE(DCONJG(ZTMP2(J))*ZTMP2(J))
+                       DTMP2(J,R) = DTMP2(J,R) + (REAL(ZTMP2(J,R))*REAL(ZTMP2(J,R)) + AIMAG(ZTMP2(J,R))*AIMAG(ZTMP2(J,R)))
+                       ! += DCONJG(ZTMP1(J)) * ZTMP2(J)
+                       DTMP3(J,R) = DTMP3(J,R) + (REAL(ZTMP1(J,R))*REAL(ZTMP2(J,R)) + AIMAG(ZTMP1(J,R))*AIMAG(ZTMP2(J,R)))
+                       DTMP4(J,R) = DTMP4(J,R) + (REAL(ZTMP1(J,R))*AIMAG(ZTMP2(J,R))- AIMAG(ZTMP1(J,R))*REAL(ZTMP2(J,R)))
                     END DO
                  END DO
 
-                 RE_S_PP(PIX) = SUM(DTMP1)
-                 RE_S_QQ(PIX) = SUM(DTMP2)
-                 RE_S_PQ(PIX) = SUM(DTMP3)
-                 IM_S_PQ(PIX) = SUM(DTMP4)
+                 RE_S_PP(PIX,R) = SUM(DTMP1(:,R))
+                 RE_S_QQ(PIX,R) = SUM(DTMP2(:,R))
+                 RE_S_PQ(PIX,R) = SUM(DTMP3(:,R))
+                 IM_S_PQ(PIX,R) = SUM(DTMP4(:,R))
 
-                 IF (RE_S_PP(PIX) .NE. RE_S_PP(PIX)) THEN
+                 IF (RE_S_PP(PIX,R) .NE. RE_S_PP(PIX,R)) THEN
                     ! NaN
                     STOP 'XHZL1: NaN(S_pp)'
-                 ELSE IF (RE_S_PP(PIX) .LE. D_ZERO) THEN
+                 ELSE IF (RE_S_PP(PIX,R) .LE. D_ZERO) THEN
                     ! should never happen
                     STOP 'XHZL1: S_pp .LE. 0'
-                 ELSE IF (RE_S_PP(PIX) .GT. HUGE(D_ZERO)) THEN
+                 ELSE IF (RE_S_PP(PIX,R) .GT. HUGE(D_ZERO)) THEN
                     ! overflow
                     ! A joint prescaling of H and S needed...
                     STOP 'XHZL1: Infinity(S_pp)'
-                 ELSE IF (RE_S_PP(PIX) .NE. D_ONE) THEN
-                    RE_S_PP(PIX) = D_ONE / SQRT(RE_S_PP(PIX))
+                 ELSE IF (RE_S_PP(PIX,R) .NE. D_ONE) THEN
+                    RE_S_PP(PIX,R) = D_ONE / SQRT(RE_S_PP(PIX,R))
                  END IF
 
-                 IF (RE_S_QQ(PIX) .NE. RE_S_QQ(PIX)) THEN
+                 IF (RE_S_QQ(PIX,R) .NE. RE_S_QQ(PIX,R)) THEN
                     ! NaN
                     STOP 'XHZL1: NaN(S_qq)'
-                 ELSE IF (RE_S_QQ(PIX) .LE. D_ZERO) THEN
+                 ELSE IF (RE_S_QQ(PIX,R) .LE. D_ZERO) THEN
                     ! should never happen
                     STOP 'XHZL1: S_qq .LE. 0'
-                 ELSE IF (RE_S_QQ(PIX) .GT. HUGE(D_ZERO)) THEN
+                 ELSE IF (RE_S_QQ(PIX,R) .GT. HUGE(D_ZERO)) THEN
                     ! overflow
                     ! A joint prescaling of H and S needed...
                     STOP 'XHZL1: Infinity(S_qq)'
-                 ELSE IF (RE_S_QQ(PIX) .NE. D_ONE) THEN
-                    RE_S_QQ(PIX) = D_ONE / SQRT(RE_S_QQ(PIX))
+                 ELSE IF (RE_S_QQ(PIX,R) .NE. D_ONE) THEN
+                    RE_S_QQ(PIX,R) = D_ONE / SQRT(RE_S_QQ(PIX,R))
                  END IF
                  
                  ! H
 
-                 RE_H_PP(PIX) = D_ZERO
-                 RE_H_QQ(PIX) = D_ZERO
-                 RE_H_PQ(PIX) = D_ZERO
-                 IM_H_PQ(PIX) = D_ZERO
+                 RE_H_PP(PIX,R) = D_ZERO
+                 RE_H_QQ(PIX,R) = D_ZERO
+                 RE_H_PQ(PIX,R) = D_ZERO
+                 IM_H_PQ(PIX,R) = D_ZERO
 
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP1 = D_ZERO ! RE_H_PP
+                 DO I = 1, DSIMDL
+                    DTMP1(I,R) = D_ZERO ! RE_H_PP
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP2 = D_ZERO ! RE_H_QQ
+                 DO I = 1, DSIMDL
+                    DTMP2(I,R) = D_ZERO ! RE_H_QQ
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP3 = D_ZERO ! RE_H_PQ
+                 DO I = 1, DSIMDL
+                    DTMP3(I,R) = D_ZERO ! RE_H_PQ
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 DTMP4 = D_ZERO ! IM_H_PQ
+                 DO I = 1, DSIMDL
+                    DTMP4(I,R) = D_ZERO ! IM_H_PQ
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 ZTMP1 = Z_ZERO ! ZP
+                 DO I = 1, DSIMDL
+                    ZTMP1(I,R) = Z_ZERO ! ZP
+                 END DO
                  !DIR$ VECTOR ALWAYS ALIGNED
-                 ZTMP2 = Z_ZERO ! ZQ
+                 DO I = 1, DSIMDL
+                    ZTMP2(I,R) = Z_ZERO ! ZQ
+                 END DO
 
                  DO I = 1, M, DSIMDL
                     L = MIN(DSIMDL, M-(I-1))
-                    !DIR$ VECTOR ALWAYS ALIGNED
+                    !DIR$ VECTOR ALWAYS ASSERT,ALIGNED
                     DO J = 1, L
-                       ZTMP1(J) = H(I+(J-1),P)
-                       ZTMP2(J) = H(I+(J-1),Q)
-                       DTMP1(J) = DTMP1(J) + JVEC(I+(J-1)) * (REAL(ZTMP1(J))*REAL(ZTMP1(J)) + AIMAG(ZTMP1(J))*AIMAG(ZTMP1(J)))
-                       DTMP2(J) = DTMP2(J) + JVEC(I+(J-1)) * (REAL(ZTMP2(J))*REAL(ZTMP2(J)) + AIMAG(ZTMP2(J))*AIMAG(ZTMP2(J)))
-                       DTMP3(J) = DTMP3(J) + JVEC(I+(J-1)) * (REAL(ZTMP1(J))*REAL(ZTMP2(J)) + AIMAG(ZTMP1(J))*AIMAG(ZTMP2(J)))
-                       DTMP4(J) = DTMP4(J) + JVEC(I+(J-1)) * (REAL(ZTMP1(J))*AIMAG(ZTMP2(J))- AIMAG(ZTMP1(J))*REAL(ZTMP2(J)))
+                       ZTMP1(J,R) = H(I+(J-1),P)
+                       ZTMP2(J,R) = H(I+(J-1),Q)
+                       DTMP1(J,R) = DTMP1(J,R) + JVEC(I+(J-1)) * (REAL(ZTMP1(J,R))*REAL(ZTMP1(J,R)) + AIMAG(ZTMP1(J,R))*AIMAG(ZTMP1(J,R)))
+                       DTMP2(J,R) = DTMP2(J,R) + JVEC(I+(J-1)) * (REAL(ZTMP2(J,R))*REAL(ZTMP2(J,R)) + AIMAG(ZTMP2(J,R))*AIMAG(ZTMP2(J,R)))
+                       DTMP3(J,R) = DTMP3(J,R) + JVEC(I+(J-1)) * (REAL(ZTMP1(J,R))*REAL(ZTMP2(J,R)) + AIMAG(ZTMP1(J,R))*AIMAG(ZTMP2(J,R)))
+                       DTMP4(J,R) = DTMP4(J,R) + JVEC(I+(J-1)) * (REAL(ZTMP1(J,R))*AIMAG(ZTMP2(J,R))- AIMAG(ZTMP1(J,R))*REAL(ZTMP2(J,R)))
                     END DO
                  END DO
 
-                 RE_H_PP(PIX) = SUM(DTMP1)
-                 RE_H_QQ(PIX) = SUM(DTMP2)
-                 RE_H_PQ(PIX) = SUM(DTMP3)
-                 IM_H_PQ(PIX) = SUM(DTMP4)
+                 RE_H_PP(PIX,R) = SUM(DTMP1(:,R))
+                 RE_H_QQ(PIX,R) = SUM(DTMP2(:,R))
+                 RE_H_PQ(PIX,R) = SUM(DTMP3(:,R))
+                 IM_H_PQ(PIX,R) = SUM(DTMP4(:,R))
 
-                 IF (RE_H_PP(PIX) .NE. RE_H_PP(PIX)) THEN
+                 IF (RE_H_PP(PIX,R) .NE. RE_H_PP(PIX,R)) THEN
                     ! NaN
                     STOP 'XHZL1: NaN(H_pp)'
-                 ELSE IF (RE_H_PP(PIX) .EQ. D_ZERO) THEN
+                 ELSE IF (RE_H_PP(PIX,R) .EQ. D_ZERO) THEN
                     ! should never happen
                     STOP 'XHZL1: H_pp .EQ. 0'
-                 ELSE IF (RE_H_PP(PIX) .GT. HUGE(D_ZERO)) THEN
+                 ELSE IF (RE_H_PP(PIX,R) .GT. HUGE(D_ZERO)) THEN
                     ! overflow
                     ! A joint prescaling of H and S needed...
                     STOP 'XHZL1: Infinity(H_pp)'
                  END IF
 
-                 IF (RE_H_QQ(PIX) .NE. RE_H_QQ(PIX)) THEN
+                 IF (RE_H_QQ(PIX,R) .NE. RE_H_QQ(PIX,R)) THEN
                     ! NaN
                     STOP 'XHZL1: NaN(H_qq)'
-                 ELSE IF (RE_H_QQ(PIX) .EQ. D_ZERO) THEN
+                 ELSE IF (RE_H_QQ(PIX,R) .EQ. D_ZERO) THEN
                     ! should never happen
                     STOP 'XHZL1: H_qq .EQ. 0'
-                 ELSE IF (RE_H_QQ(PIX) .GT. HUGE(D_ZERO)) THEN
+                 ELSE IF (RE_H_QQ(PIX,R) .GT. HUGE(D_ZERO)) THEN
                     ! overflow
                     ! A joint prescaling of H and S needed...
                     STOP 'XHZL1: Infinity(H_qq)'
                  END IF
 
-                 IF (RE_H_PQ(PIX) .NE. RE_H_PQ(PIX)) THEN
+                 IF (RE_H_PQ(PIX,R) .NE. RE_H_PQ(PIX,R)) THEN
                     ! NaN
                     STOP 'XHZL1: NaN(Re(H_pq))'
-                 ELSE IF (ABS(RE_H_PQ(PIX)) .GT. HUGE(D_ZERO)) THEN
+                 ELSE IF (ABS(RE_H_PQ(PIX,R)) .GT. HUGE(D_ZERO)) THEN
                     ! overflow
                     STOP 'XHZL1: Infinity(|Re(H_pq)|)'
                  END IF
 
-                 IF (IM_H_PQ(PIX) .NE. IM_H_PQ(PIX)) THEN
+                 IF (IM_H_PQ(PIX,R) .NE. IM_H_PQ(PIX,R)) THEN
                     ! NaN
                     STOP 'XHZL1: NaN(Im(H_pq))'
-                 ELSE IF (ABS(IM_H_PQ(PIX)) .GT. HUGE(D_ZERO)) THEN
+                 ELSE IF (ABS(IM_H_PQ(PIX,R)) .GT. HUGE(D_ZERO)) THEN
                     ! overflow
                     STOP 'XHZL1: Infinity(|Im(H_pq)|)'
                  END IF
@@ -355,38 +442,38 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
            !DIR$ VECTOR ALWAYS ALIGNED
            DO PIX = 1, DSIMDL ! PPV
               ! compute the scales
-              DTMP1(PIX) = RE_S_PP(PIX) * RE_S_PP(PIX)
-              DTMP2(PIX) = RE_S_QQ(PIX) * RE_S_QQ(PIX)
-              DTMP3(PIX) = RE_S_PP(PIX) * RE_S_QQ(PIX)
+              DTMP1(PIX,R) = RE_S_PP(PIX,R) * RE_S_PP(PIX,R)
+              DTMP2(PIX,R) = RE_S_QQ(PIX,R) * RE_S_QQ(PIX,R)
+              DTMP3(PIX,R) = RE_S_PP(PIX,R) * RE_S_QQ(PIX,R)
               ! scale H
-              RE_H_PP(PIX) = RE_H_PP(PIX) * DTMP1(PIX)
-              RE_H_QQ(PIX) = RE_H_QQ(PIX) * DTMP2(PIX)
-              RE_H_PQ(PIX) = RE_H_PQ(PIX) * DTMP3(PIX)
-              IM_H_PQ(PIX) = IM_H_PQ(PIX) * DTMP3(PIX)
+              RE_H_PP(PIX,R) = RE_H_PP(PIX,R) * DTMP1(PIX,R)
+              RE_H_QQ(PIX,R) = RE_H_QQ(PIX,R) * DTMP2(PIX,R)
+              RE_H_PQ(PIX,R) = RE_H_PQ(PIX,R) * DTMP3(PIX,R)
+              IM_H_PQ(PIX,R) = IM_H_PQ(PIX,R) * DTMP3(PIX,R)
               ! scale S
-              RE_S_PQ(PIX) = RE_S_PQ(PIX) * DTMP3(PIX)
-              IM_S_PQ(PIX) = IM_S_PQ(PIX) * DTMP3(PIX)
+              RE_S_PQ(PIX,R) = RE_S_PQ(PIX,R) * DTMP3(PIX,R)
+              IM_S_PQ(PIX,R) = IM_S_PQ(PIX,R) * DTMP3(PIX,R)
               ! compute ABS
-              AV_H_PQ(PIX) = HYPOT(RE_H_PQ(PIX), IM_H_PQ(PIX))
-              AV_S_PQ(PIX) = HYPOT(RE_S_PQ(PIX), IM_S_PQ(PIX))
+              AV_H_PQ(PIX,R) = HYPOT(RE_H_PQ(PIX,R), IM_H_PQ(PIX,R))
+              AV_S_PQ(PIX,R) = HYPOT(RE_S_PQ(PIX,R), IM_S_PQ(PIX,R))
               ! rotate or not
               ! 1 if H has to be rotated, else 0
-              DTMP3(PIX) = SCALE(SIGN(D_ONE, AV_H_PQ(PIX) - SQRT(RE_H_PP(PIX)) * SQRT(RE_H_QQ(PIX)) * DTOL(1)) + D_ONE, -1)
+              DTMP3(PIX,R) = SCALE(SIGN(D_ONE, AV_H_PQ(PIX,R) - SQRT(RE_H_PP(PIX,R))*SQRT(RE_H_QQ(PIX,R))*DTOL) + D_ONE, -1)
               ! 1 if S has to be rotated, else 0
-              DTMP4(PIX) = SCALE(SIGN(D_ONE, AV_S_PQ(PIX) - DTOL(1)) + D_ONE, -1)
+              DTMP4(PIX,R) = SCALE(SIGN(D_ONE, AV_S_PQ(PIX,R) - DTOL) + D_ONE, -1)
               ! 1 if either H or S have to be rotated, else 0
-              DHZ(PIX) = MAX(DTMP3(PIX), DTMP4(PIX))
-              HZ(PIX) = INT(DHZ(PIX))
+              DHZ(PIX,R) = MAX(DTMP3(PIX,R), DTMP4(PIX,R))
+              HZ(PIX,R) = INT(DHZ(PIX,R))
            END DO
 
-           IF (MAXVAL(AV_H_PQ) .GT. HUGE(D_ZERO)) STOP 'XHZL1: |H_pq| overflow.'
+           IF (MAXVAL(AV_H_PQ(:,R)) .GT. HUGE(D_ZERO)) STOP 'XHZL1: |H_pq| overflow.'
 
            J = 0
            DO PIX = 1, PPV
               IF (PIX .GT. PPV) THEN
-                 HZ(PIX) = 0
+                 HZ(PIX,R) = 0
               ELSE
-                 J = J + HZ(PIX)
+                 J = J + HZ(PIX,R)
               END IF
            END DO
            IF (J .EQ. 0) CYCLE
@@ -394,125 +481,129 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
            IF (J .LT. 0) STOP 'XHZL1: SNROT < 0'
            IF (J .GT. PPV) STOP 'XHZL1: SNROT > PPV'
 #endif
-           SNROT(1) = SNROT(1) + J
+           LNROT(1) = LNROT(1) + J
 
            !DIR$ VECTOR ALWAYS ALIGNED
            DO PIX = 1, DSIMDL ! PPV
               ! get the polar form
-              DTMP1(PIX) = D_ONE / AV_H_PQ(PIX)
-              DTMP2(PIX) = D_ONE / AV_S_PQ(PIX)
+              DTMP1(PIX,R) = D_ONE / AV_H_PQ(PIX,R)
+              DTMP2(PIX,R) = D_ONE / AV_S_PQ(PIX,R)
               ! expect 0/0 := NaN, 0*Inf := NaN, MIN(x,NaN) == x
-              CA_H_PQ(PIX) = MIN(RE_H_PQ(PIX) * DTMP1(PIX), CA_H_PQ(PIX))
-              SA_H_PQ(PIX) = MIN(IM_H_PQ(PIX) * DTMP1(PIX), SA_H_PQ(PIX)) * DTMP3(PIX)
-              CA_S_PQ(PIX) = MIN(RE_S_PQ(PIX) * DTMP2(PIX), CA_S_PQ(PIX))
-              SA_S_PQ(PIX) = MIN(IM_S_PQ(PIX) * DTMP2(PIX), SA_S_PQ(PIX)) * DTMP4(PIX)
+              CA_H_PQ(PIX,R) = MIN(RE_H_PQ(PIX,R) * DTMP1(PIX,R), CA_H_PQ(PIX,R))
+              SA_H_PQ(PIX,R) = MIN(IM_H_PQ(PIX,R) * DTMP1(PIX,R), SA_H_PQ(PIX,R)) * DTMP3(PIX,R)
+              CA_S_PQ(PIX,R) = MIN(RE_S_PQ(PIX,R) * DTMP2(PIX,R), CA_S_PQ(PIX,R))
+              SA_S_PQ(PIX,R) = MIN(IM_S_PQ(PIX,R) * DTMP2(PIX,R), SA_S_PQ(PIX,R)) * DTMP4(PIX,R)
               ! compute the temps
-              T(PIX) = SQRT(D_ONE - AV_S_PQ(PIX) * AV_S_PQ(PIX))
-              U(PIX) = CA_S_PQ(PIX) * RE_H_PQ(PIX) + SA_S_PQ(PIX) * IM_H_PQ(PIX)
-              V(PIX) = CA_S_PQ(PIX) * IM_H_PQ(PIX) - SA_S_PQ(PIX) * RE_H_PQ(PIX)
-              E(PIX) = RE_H_QQ(PIX) - RE_H_PP(PIX)
+              T(PIX,R) = SQRT(D_ONE - AV_S_PQ(PIX,R) * AV_S_PQ(PIX,R))
+              U(PIX,R) = CA_S_PQ(PIX,R) * RE_H_PQ(PIX,R) + SA_S_PQ(PIX,R) * IM_H_PQ(PIX,R)
+              V(PIX,R) = CA_S_PQ(PIX,R) * IM_H_PQ(PIX,R) - SA_S_PQ(PIX,R) * RE_H_PQ(PIX,R)
+              E(PIX,R) = RE_H_QQ(PIX,R) - RE_H_PP(PIX,R)
               ! V==0 & E==0 ==> NaN(TG)
-              DTMP1(PIX) = D_ONE - MAX(V(PIX) / V(PIX), D_ZERO)
-              DTMP2(PIX) = D_ONE - MAX(E(PIX) / E(PIX), D_ZERO)
-              HZ(PIX) = HZ(PIX) + INT(SCALE(DTMP1(PIX) * DTMP2(PIX), 1))
+              DTMP1(PIX,R) = D_ONE - MAX(V(PIX,R) / V(PIX,R), D_ZERO)
+              DTMP2(PIX,R) = D_ONE - MAX(E(PIX,R) / E(PIX,R), D_ZERO)
+              HZ(PIX,R) = HZ(PIX,R) + INT(SCALE(DTMP1(PIX,R) * DTMP2(PIX,R), 1))
               ! compute fns of \gamma
-              TG(PIX) = SCALE(V(PIX) / E(PIX), 1)
-              CG(PIX) = D_ONE / SQRT(D_ONE + TG(PIX) * TG(PIX))
+              TG(PIX,R) = SCALE(V(PIX,R) / E(PIX,R), 1)
+              CG(PIX,R) = D_ONE / SQRT(D_ONE + TG(PIX,R) * TG(PIX,R))
               ! beware of Inf(TG), expect MIN(x,NaN) == x
-              SG(PIX) = SIGN(MIN(TG(PIX) * CG(PIX), SG(PIX)), TG(PIX))
+              SG(PIX,R) = SIGN(MIN(TG(PIX,R) * CG(PIX,R), SG(PIX,R)), TG(PIX,R))
               ! compute fns of 2\vartheta
-              DHZ(PIX) = SIGN(D_ONE, E(PIX))
-              T2T(PIX) = (DHZ(PIX) * (SCALE(U(PIX), 1) - (RE_H_PP(PIX) + RE_H_QQ(PIX)) * AV_S_PQ(PIX))) / &
-                   (T(PIX) * SQRT(E(PIX) * E(PIX) + SCALE(V(PIX) * V(PIX), 2)))
-              C2T(PIX) = D_ONE / SQRT(D_ONE + T2T(PIX) * T2T(PIX))
-              S2T(PIX) = T2T(PIX) * C2T(PIX)
-              DTMP1(PIX) = D_ONE + T(PIX) * C2T(PIX) * CG(PIX)
-              DHZ(PIX) = AV_S_PQ(PIX) * S2T(PIX)
-              DTMP2(PIX) = DTMP1(PIX) - DHZ(PIX)
-              DTMP1(PIX) = DTMP1(PIX) + DHZ(PIX)
+              DHZ(PIX,R) = SIGN(D_ONE, E(PIX,R))
+              T2T(PIX,R) = (DHZ(PIX,R) * (SCALE(U(PIX,R), 1) - (RE_H_PP(PIX,R) + RE_H_QQ(PIX,R)) * AV_S_PQ(PIX,R))) / &
+                   (T(PIX,R) * SQRT(E(PIX,R) * E(PIX,R) + SCALE(V(PIX,R) * V(PIX,R), 2)))
+              C2T(PIX,R) = D_ONE / SQRT(D_ONE + T2T(PIX,R) * T2T(PIX,R))
+              S2T(PIX,R) = T2T(PIX,R) * C2T(PIX,R)
+              DTMP1(PIX,R) = D_ONE + T(PIX,R) * C2T(PIX,R) * CG(PIX,R)
+              DHZ(PIX,R) = AV_S_PQ(PIX,R) * S2T(PIX,R)
+              DTMP2(PIX,R) = DTMP1(PIX,R) - DHZ(PIX,R)
+              DTMP1(PIX,R) = DTMP1(PIX,R) + DHZ(PIX,R)
               ! compute the transformation
-              CPHI(PIX) = SQRT(SCALE(DTMP1(PIX), -1))
-              CPSI(PIX) = SQRT(SCALE(DTMP2(PIX), -1))
+              CPHI(PIX,R) = SQRT(SCALE(DTMP1(PIX,R), -1))
+              CPSI(PIX,R) = SQRT(SCALE(DTMP2(PIX,R), -1))
               ! for big/small rot
-              DHZ(PIX) = (D_ONE - CPHI(PIX)) + (D_ONE - CPSI(PIX))
-              DTMP3(PIX) = S2T(PIX) - AV_S_PQ(PIX)
-              DTMP4(PIX) = T(PIX) * SG(PIX) * C2T(PIX)
-              TG(PIX) = -SA_S_PQ(PIX) * DTMP4(PIX)
-              T2T(PIX) = CA_S_PQ(PIX) * DTMP4(PIX)
-              T(PIX) = D_ONE / T(PIX)
-              RE_ASPHI(PIX) = CA_S_PQ(PIX) * DTMP3(PIX) + TG(PIX)
-              IM_ASPHI(PIX) = T2T(PIX) + SA_S_PQ(PIX) * DTMP3(PIX)
-              DTMP4(PIX) = (CPSI(PIX) * RE_S_PP(PIX) * T(PIX)) / DTMP2(PIX)
-              RE_ASPHI(PIX) = RE_ASPHI(PIX) * DTMP4(PIX)
-              IM_ASPHI(PIX) = IM_ASPHI(PIX) * DTMP4(PIX)
-              DTMP3(PIX) = S2T(PIX) + AV_S_PQ(PIX)
-              RE_MBSPSI(PIX) = CA_S_PQ(PIX) * DTMP3(PIX) + TG(PIX)
-              IM_MBSPSI(PIX) = T2T(PIX) + SA_S_PQ(PIX) * DTMP3(PIX)
-              DTMP4(PIX) = (CPHI(PIX) * RE_S_QQ(PIX) * T(PIX)) / DTMP1(PIX)
-              RE_MBSPSI(PIX) = -RE_MBSPSI(PIX) * DTMP4(PIX)
-              IM_MBSPSI(PIX) = IM_MBSPSI(PIX) * DTMP4(PIX)
-              CPHI(PIX) = CPHI(PIX) * RE_S_PP(PIX) * T(PIX)
-              CPSI(PIX) = CPSI(PIX) * RE_S_QQ(PIX) * T(PIX)
+              DHZ(PIX,R) = (D_ONE - CPHI(PIX,R)) + (D_ONE - CPSI(PIX,R))
+              DTMP3(PIX,R) = S2T(PIX,R) - AV_S_PQ(PIX,R)
+              DTMP4(PIX,R) = T(PIX,R) * SG(PIX,R) * C2T(PIX,R)
+              TG(PIX,R) = -SA_S_PQ(PIX,R) * DTMP4(PIX,R)
+              T2T(PIX,R) = CA_S_PQ(PIX,R) * DTMP4(PIX,R)
+              T(PIX,R) = D_ONE / T(PIX,R)
+              RE_ASPHI(PIX,R) = CA_S_PQ(PIX,R) * DTMP3(PIX,R) + TG(PIX,R)
+              IM_ASPHI(PIX,R) = T2T(PIX,R) + SA_S_PQ(PIX,R) * DTMP3(PIX,R)
+              DTMP4(PIX,R) = (CPSI(PIX,R) * RE_S_PP(PIX,R) * T(PIX,R)) / DTMP2(PIX,R)
+              RE_ASPHI(PIX,R) = RE_ASPHI(PIX,R) * DTMP4(PIX,R)
+              IM_ASPHI(PIX,R) = IM_ASPHI(PIX,R) * DTMP4(PIX,R)
+              DTMP3(PIX,R) = S2T(PIX,R) + AV_S_PQ(PIX,R)
+              RE_MBSPSI(PIX,R) = CA_S_PQ(PIX,R) * DTMP3(PIX,R) + TG(PIX,R)
+              IM_MBSPSI(PIX,R) = T2T(PIX,R) + SA_S_PQ(PIX,R) * DTMP3(PIX,R)
+              DTMP4(PIX,R) = (CPHI(PIX,R) * RE_S_QQ(PIX,R) * T(PIX,R)) / DTMP1(PIX,R)
+              RE_MBSPSI(PIX,R) = -RE_MBSPSI(PIX,R) * DTMP4(PIX,R)
+              IM_MBSPSI(PIX,R) = IM_MBSPSI(PIX,R) * DTMP4(PIX,R)
+              CPHI(PIX,R) = CPHI(PIX,R) * RE_S_PP(PIX,R) * T(PIX,R)
+              CPSI(PIX,R) = CPSI(PIX,R) * RE_S_QQ(PIX,R) * T(PIX,R)
            END DO
            
            ! apply the transformations
 
            DO PIX = 1, PPV
-              IF (MOD(HZ(PIX),2) .EQ. 0) CYCLE
+              IF (MOD(HZ(PIX,R),2) .EQ. 0) CYCLE
               ! ``global'' pair index
               PAIR = (VEC - 1) * PPV + PIX
               IF (PAIR .LE. NPAIRS) THEN
                  P = JSPAIR(1,PAIR,STEP)
                  Q = JSPAIR(2,PAIR,STEP)
                  ! ...transform...
-                 IF (HZ(PIX) .EQ. 3) THEN
-                    CPHI(PIX) = D_CS_PI_4 * RE_S_PP(PIX)
-                    RE_MBSPSI(PIX) = CA_S_PQ(PIX) * D_CS_PI_4
-                    IM_MBSPSI(PIX) = -SA_S_PQ(PIX) * D_CS_PI_4
-                    RE_ASPHI(PIX) = -RE_MBSPSI(PIX) * RE_S_PP(PIX)
-                    IM_ASPHI(PIX) = IM_MBSPSI(PIX) * RE_S_PP(PIX)
-                    RE_MBSPSI(PIX) = RE_MBSPSI(PIX) * RE_S_QQ(PIX)
-                    IM_MBSPSI(PIX) = IM_MBSPSI(PIX) * RE_S_QQ(PIX)
-                    CPSI(PIX) = D_CS_PI_4 * RE_S_QQ(PIX)
+                 IF (HZ(PIX,R) .EQ. 3) THEN
+                    CPHI(PIX,R) = D_CS_PI_4 * RE_S_PP(PIX,R)
+                    RE_MBSPSI(PIX,R) = CA_S_PQ(PIX,R) * D_CS_PI_4
+                    IM_MBSPSI(PIX,R) = -SA_S_PQ(PIX,R) * D_CS_PI_4
+                    RE_ASPHI(PIX,R) = -RE_MBSPSI(PIX,R) * RE_S_PP(PIX,R)
+                    IM_ASPHI(PIX,R) = IM_MBSPSI(PIX,R) * RE_S_PP(PIX,R)
+                    RE_MBSPSI(PIX,R) = RE_MBSPSI(PIX,R) * RE_S_QQ(PIX,R)
+                    IM_MBSPSI(PIX,R) = IM_MBSPSI(PIX,R) * RE_S_QQ(PIX,R)
+                    CPSI(PIX,R) = D_CS_PI_4 * RE_S_QQ(PIX,R)
 
-                    DTMP1(PIX) = D_ONE / SQRT(D_ONE + AV_S_PQ(PIX))
-                    DTMP2(PIX) = D_ONE / SQRT(D_ONE - AV_S_PQ(PIX))
-                    CPHI(PIX) = CPHI(PIX) * DTMP1(PIX)
-                    RE_MBSPSI(PIX) = RE_MBSPSI(PIX) * DTMP1(PIX)
-                    IM_MBSPSI(PIX) = IM_MBSPSI(PIX) * DTMP1(PIX)
-                    RE_ASPHI(PIX) = RE_ASPHI(PIX) * DTMP2(PIX)
-                    IM_ASPHI(PIX) = IM_ASPHI(PIX) * DTMP2(PIX)
-                    CPSI(PIX) = CPSI(PIX) * DTMP2(PIX)
+                    DTMP1(PIX,R) = D_ONE / SQRT(D_ONE + AV_S_PQ(PIX,R))
+                    DTMP2(PIX,R) = D_ONE / SQRT(D_ONE - AV_S_PQ(PIX,R))
+                    CPHI(PIX,R) = CPHI(PIX,R) * DTMP1(PIX,R)
+                    RE_MBSPSI(PIX,R) = RE_MBSPSI(PIX,R) * DTMP1(PIX,R)
+                    IM_MBSPSI(PIX,R) = IM_MBSPSI(PIX,R) * DTMP1(PIX,R)
+                    RE_ASPHI(PIX,R) = RE_ASPHI(PIX,R) * DTMP2(PIX,R)
+                    IM_ASPHI(PIX,R) = IM_ASPHI(PIX,R) * DTMP2(PIX,R)
+                    CPSI(PIX,R) = CPSI(PIX,R) * DTMP2(PIX,R)
 
-                    DHZ(PIX) = D_TWO - SQRT(D_TWO)
+                    DHZ(PIX,R) = D_TWO - SQRT(D_TWO)
                  END IF
                  ! form the transformation
-                 IF (.NOT. (CPHI(PIX) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_11 overflow or NaN.'
-                 DTMP1(PIX) = CPHI(PIX)
-                 IF (.NOT. (ABS(RE_MBSPSI(PIX)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_21)| overflow or NaN.'
-                 IF (.NOT. (ABS(IM_MBSPSI(PIX)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Im(F_21)| overflow or NaN.'
-                 ZTMP1(PIX) = CMPLX(RE_MBSPSI(PIX), IM_MBSPSI(PIX), DWP)
-                 IF (.NOT. (ABS(RE_ASPHI(PIX)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_12)| overflow or NaN.'
-                 IF (.NOT. (ABS(IM_ASPHI(PIX)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Im(F_12)| overflow or NaN.'
-                 ZTMP2(PIX) = CMPLX(RE_ASPHI(PIX), IM_ASPHI(PIX), DWP)
-                 IF (.NOT. (CPSI(PIX) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_22 overflow or NaN.'
-                 DTMP2(PIX) = CPSI(PIX)
-                 IF (DHZ(PIX) .GT. D_ZERO) SNROT(2) = SNROT(2) + 1
+                 IF (.NOT. (CPHI(PIX,R) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_11 overflow or NaN.'
+                 DTMP1(PIX,R) = CPHI(PIX,R)
+                 IF (.NOT. (ABS(RE_MBSPSI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_21)| overflow or NaN.'
+                 IF (.NOT. (ABS(IM_MBSPSI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Im(F_21)| overflow or NaN.'
+                 ZTMP1(PIX,R) = DCMPLX(RE_MBSPSI(PIX,R), IM_MBSPSI(PIX,R))
+                 IF (.NOT. (ABS(RE_ASPHI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_12)| overflow or NaN.'
+                 IF (.NOT. (ABS(IM_ASPHI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Im(F_12)| overflow or NaN.'
+                 ZTMP2(PIX,R) = DCMPLX(RE_ASPHI(PIX,R), IM_ASPHI(PIX,R))
+                 IF (.NOT. (CPSI(PIX,R) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_22 overflow or NaN.'
+                 DTMP2(PIX,R) = CPSI(PIX,R)
+                 IF (DHZ(PIX,R) .GT. D_ZERO) LNROT(2) = LNROT(2) + 1
                  ! apply the transformation
-                 IF ((DTMP1(PIX) .NE. D_ONE) .OR. (DTMP2(PIX) .NE. D_ONE) .OR. &
-                      (ZTMP1(PIX) .NE. Z_ZERO) .OR. (ZTMP2(PIX) .NE. Z_ZERO)) THEN
-                    CALL XVROTM(M, H(1,P), H(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
-                    CALL XVROTM(M, S(1,P), S(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
-                    CALL XVROTM(N, Z(1,P), Z(1,Q), DTMP1(PIX), ZTMP1(PIX), ZTMP2(PIX), DTMP2(PIX))
+                 IF ((DTMP1(PIX,R) .NE. D_ONE) .OR. (DTMP2(PIX,R) .NE. D_ONE) .OR. &
+                      (ZTMP1(PIX,R) .NE. Z_ZERO) .OR. (ZTMP2(PIX,R) .NE. Z_ZERO)) THEN
+                    CALL XVROTM(M, H(1,P), H(1,Q), DTMP1(PIX,R), ZTMP1(PIX,R), ZTMP2(PIX,R), DTMP2(PIX,R))
+                    CALL XVROTM(M, S(1,P), S(1,Q), DTMP1(PIX,R), ZTMP1(PIX,R), ZTMP2(PIX,R), DTMP2(PIX,R))
+                    CALL XVROTM(N, Z(1,P), Z(1,Q), DTMP1(PIX,R), ZTMP1(PIX,R), ZTMP2(PIX,R), DTMP2(PIX,R))
                  ELSE ! identity
-                    SNROT(1) = SNROT(1) - 1
+                    LNROT(1) = LNROT(1) - 1
                  END IF
               END IF
            END DO
         END DO
+        !$OMP END DO
+        !$OMP END PARALLEL
+        !DIR$ VECTOR ALWAYS ASSERT,ALIGNED
+        SNROT = SNROT + LNROT
      END DO
      WRITE (ULOG,'(I3,A,I20,A,I20)') SWEEP,',',SNROT(1),',',SNROT(2)
-     !DIR$ VECTOR ALWAYS ALIGNED
+     !DIR$ VECTOR ALWAYS ASSERT,ALIGNED
      NROT = NROT + SNROT
      IF (SNROT(2) .EQ. 0) EXIT
   END DO
@@ -521,106 +612,131 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,&
 
   ! Scaling of H,S,Z.
 
+  !$OMP  PARALLEL DO DEFAULT(NONE) PRIVATE(I,J,L,P,Q,R,DTOL) &
+  !$OMP& SHARED(M,N,H,LDH,S,LDS,Z,LDZ,JVEC,EE,EY,EW,SY,SW,SS, DTMP1,DTMP2,DTMP3,DTMP4,ZTMP1,ZTMP2)
   DO J = 1, N
+     R = INT(OMP_GET_THREAD_NUM()) + 1
+
      !DIR$ VECTOR ALWAYS ALIGNED
-     DTMP1 = D_ZERO
+     DO I = 1, DSIMDL
+        DTMP1(I,R) = D_ZERO
+     END DO
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DO I = 1, DSIMDL
+        DTMP2(I,R) = D_ZERO
+     END DO
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DO I = 1, DSIMDL
+        DTMP3(I,R) = D_ZERO
+     END DO
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DO I = 1, DSIMDL
+        DTMP4(I,R) = D_ZERO
+     END DO
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DO I = 1, DSIMDL
+        ZTMP1(I,R) = Z_ZERO
+     END DO
+     !DIR$ VECTOR ALWAYS ALIGNED
+     DO I = 1, DSIMDL
+        ZTMP1(I,R) = Z_ZERO
+     END DO
 
      DO I = 1, M, DSIMDL
         P = MIN(DSIMDL, M-(I-1))
         !DIR$ VECTOR ALWAYS ALIGNED
         DO L = 1, P
-           ZTMP1(L) = H(I+(L-1),J)
-           DTMP1(L) = DTMP1(L) + JVEC(I+(L-1)) * (REAL(ZTMP1(L))*REAL(ZTMP1(L)) + AIMAG(ZTMP1(L))*AIMAG(ZTMP1(L)))
+           ZTMP1(L,R) = H(I+(L-1),J)
+           DTMP1(L,R) = DTMP1(L,R) + JVEC(I+(L-1))*(REAL(ZTMP1(L,R))*REAL(ZTMP1(L,R)) + AIMAG(ZTMP1(L,R))*AIMAG(ZTMP1(L,R)))
         END DO
      END DO
-     DTOL(1) = SUM(DTMP1)
-     IF (DTOL(1) .NE. D_ZERO) THEN
-        EY(J) = DTOL(1)
-        DTOL(2) = ABS(DTOL(1))
-        IF (DTOL(2) .NE. D_ONE) THEN
-           DTMP1(1) = DTOL(1)
-           DTOL(1) = SQRT(DTOL(2))
-           SY(J) = DTOL(1)
+     DTMP3(1,R) = SUM(DTMP1(:,R))
+     IF (DTMP3(1,R) .NE. D_ZERO) THEN
+        EY(J) = DTMP3(1,R)
+        DTMP4(1,R) = ABS(DTMP3(1,R))
+        IF (DTMP4(1,R) .NE. D_ONE) THEN
+           DTMP1(1,R) = DTMP3(1,R)
+           DTMP3(1,R) = SQRT(DTMP4(1,R))
+           SY(J) = DTMP3(1,R)
            DO I = 1, M, DSIMDL
               P = MIN(DSIMDL, M-(I-1))
               !DIR$ VECTOR ALWAYS ALIGNED
               DO L = 1, P
-                 H(I+(L-1),J) = H(I+(L-1),J) / DTOL(1)
+                 H(I+(L-1),J) = H(I+(L-1),J) / DTMP3(1,R)
               END DO
            END DO
-           DTOL(2) = DTOL(1)
-           DTOL(1) = DTMP1(1)
+           DTMP4(1,R) = DTMP3(1,R)
+           DTMP3(1,R) = DTMP1(1,R)
         ELSE
            SY(J) = S_ONE
         END IF
      ELSE
-        DTOL(2) = D_ZERO
+        DTMP4(1,R) = D_ZERO
         EY(J) = S_ZERO
         SY(J) = S_ZERO
      END IF
-
-     !DIR$ VECTOR ALWAYS ALIGNED
-     DTMP2 = D_ZERO
 
      DO I = 1, M, DSIMDL
         P = MIN(DSIMDL, M-(I-1))
         !DIR$ VECTOR ALWAYS ALIGNED
         DO L = 1, P
-           ZTMP2(L) = S(I+(L-1),J)
-           DTMP2(L) = DTMP2(L) + (REAL(ZTMP2(L))*REAL(ZTMP2(L)) + AIMAG(ZTMP2(L))*AIMAG(ZTMP2(L)))
+           ZTMP2(L,R) = S(I+(L-1),J)
+           DTMP2(L,R) = DTMP2(L,R) + (REAL(ZTMP2(L,R))*REAL(ZTMP2(L,R)) + AIMAG(ZTMP2(L,R))*AIMAG(ZTMP2(L,R)))
         END DO
      END DO
-     DTOL(3) = SUM(DTMP2)
-     IF (DTOL(3) .NE. D_ZERO) THEN
-        IF (DTOL(3) .NE. D_ONE) THEN
-           EW(J) = DTOL(3)
-           DTMP2(1) = DTOL(1)
-           DTOL(1) = SQRT(DTOL(3))
-           SW(J) = DTOL(1)
+     DTMP1(1,R) = SUM(DTMP2(:,R))
+     IF (DTMP1(1,R) .NE. D_ZERO) THEN
+        IF (DTMP1(1,R) .NE. D_ONE) THEN
+           EW(J) = DTMP1(1,R)
+           DTMP2(1,R) = DTMP3(1,R)
+           DTMP3(1,R) = SQRT(DTMP1(1,R))
+           SW(J) = DTMP3(1,R)
            DO I = 1, M, DSIMDL
               P = MIN(DSIMDL, M-(I-1))
               !DIR$ VECTOR ALWAYS ALIGNED
               DO L = 1, P
-                 S(I+(L-1),J) = S(I+(L-1),J) / DTOL(1)
+                 S(I+(L-1),J) = S(I+(L-1),J) / DTMP3(1,R)
               END DO
            END DO
-           DTOL(4) = DTOL(1)
-           DTOL(1) = DTMP2(1)
+           DTOL = DTMP2(1,R)
+           DTMP2(1,R) = DTMP3(1,R)
+           DTMP3(1,R) = DTOL
         ELSE
-           DTOL(4) = D_ONE
+           DTMP2(1,R) = D_ONE
            EW(J) = S_ONE
            SW(J) = S_ONE
         END IF
      ELSE
-        DTOL(4) = D_ZERO
+        DTMP2(1,R) = D_ZERO
         EW(J) = S_ZERO
         SW(J) = S_ZERO
      END IF
 
-     DTOL(3) = DTOL(1) / DTOL(3)
-     EE(J) = DTOL(3)
-     DTOL(1) = HYPOT(DTOL(2), DTOL(4))
-     IF (DTOL(1) .NE. D_ONE) THEN
-        SS(J) = DTOL(1)
+     DTMP1(1,R) = DTMP3(1,R) / DTMP1(1,R)
+     EE(J) = DTMP1(1,R)
+     DTMP3(1,R) = HYPOT(DTMP4(1,R), DTMP2(1,R))
+     IF (DTMP3(1,R) .NE. D_ONE) THEN
+        SS(J) = DTMP3(1,R)
         ! underflow
-        IF (DTOL(1) .LT. TINY(D_ZERO)) STOP 'XHZL1: Scale of Z underflows.'
+        IF (DTMP3(1,R) .LT. TINY(D_ZERO)) STOP 'XHZL1: Scale of Z underflows.'
         ! overflow
-        IF (DTOL(1) .GT. HUGE(D_ZERO)) STOP 'XHZL1: Scale of Z overflows.'
-        DTOL(2) = DTOL(2) / DTOL(1)
-        SY(J) = DTOL(2)
-        DTOL(4) = DTOL(4) / DTOL(1)
-        SW(J) = DTOL(4)
+        IF (DTMP3(1,R) .GT. HUGE(D_ZERO)) STOP 'XHZL1: Scale of Z overflows.'
+        DTMP4(1,R) = DTMP4(1,R) / DTMP3(1,R)
+        SY(J) = DTMP4(1,R)
+        DTMP2(1,R) = DTMP2(1,R) / DTMP3(1,R)
+        SW(J) = DTMP2(1,R)
         DO I = 1, N, DSIMDL
            P = MIN(DSIMDL, N-(I-1))
            !DIR$ VECTOR ALWAYS ALIGNED
            DO L = 1, P
-              Z(I+(L-1),J) = Z(I+(L-1),J) / DTOL(1)
+              Z(I+(L-1),J) = Z(I+(L-1),J) / DTMP3(1,R)
            END DO
         END DO
      ELSE
         SS(J) = S_ONE
      END IF
   END DO
+  !$OMP END PARALLEL DO
 
 #ifndef NDEBUG
   DO L = 1, 5
