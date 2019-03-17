@@ -1,13 +1,11 @@
 # MPHZ
 A multi-precision Hari-Zimmermann complex GSVD.
 
-...a work in progress...
-
 ## Building
 
 ### Prerequisites
 
-A recent 64-bit Linux (e.g., CentOS 7.5) or macOS (e.g., High Sierra) is needed.
+A recent 64-bit Linux (e.g., CentOS 7.6) or macOS (e.g., Mojave) is needed.
 
 Have the Intel MKL (Math Kernel Library) installed.
 
@@ -33,8 +31,10 @@ where ``T`` is the number of threads, ``C`` is the thread placement (e.g., ``COR
 
 ### Data format
 
-Data should be contained in ``FN.Y`` and ``FN.W`` binary, Fortran-array-order files of ``KIND_FILE`` element kind, where the first one stores the matrix ``F`` and the second one the matrix ``G``, and both matrices are expected to have ``M`` rows and ``N`` columns.
+Data should be contained in ``FN.Y``, ``FN.W``, and ``FN.J`` binary files.
+The first two are Fortran-array-order files of ``KIND_FILE`` element kind, where the first one stores the matrix ``F`` and the second one the matrix ``G``, and both matrices are complex and expected to have ``M`` rows and ``N`` columns.
+The third file contains the diagonal of the matrix ``J`` as a vector of 8-byte integers.
 
-The output comprises ``FN.YU``, ``FN.WV``, ``FN.Z``, for the matrices ``U``, ``V``, and ``Z``; and ``FN.SY``, ``FN.SW``, ``FN.SS``, for the vectors ``\Sigma_F``, ``\Sigma_G``, and ``\Sigma``, respectively.
+The output comprises ``FN.YU``, ``FN.WV``, ``FN.Z``, for the complex matrices ``U``, ``V`` (both ``M x N``), and ``Z`` (``N x N``); ``FN.SY``, ``FN.SW``, ``FN.SS``, for the real vectors ``\Sigma_F``, ``\Sigma_G``, and ``\Sigma``; and ``FN.EY``, ``FN.EW``, ``FN.E``, for the real vectors ``\Lambda_F``, ``\Lambda_G``, and ``\Lambda``, respectively, where all vectors are of length ``N``.
 
 This work has been supported in part by Croatian Science Foundation under the project IP-2014-09-3670 ([MFBDA](https://web.math.pmf.unizg.hr/mfbda/)).
