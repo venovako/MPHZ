@@ -1,4 +1,4 @@
-! L1 double complex HZ (parallel, vectorized).
+! L1 complex HZ (parallel, vectorized).
 SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,CPR,&
      EE,EY,EW, SY,SW,SS, NROT,INFO)
 #ifndef NDEBUG

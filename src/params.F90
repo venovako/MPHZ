@@ -25,16 +25,27 @@ MODULE PARAMS
   INTEGER, PARAMETER :: FWP = SWP
 #endif
 
+  ! Max file name length.
+  INTEGER, PARAMETER :: FNL = 252
+
   ! Cache line size in bytes.
-  ! Valid for Intel CPUs, needs changing for e.g. POWER (128 B).
+  ! Valid for the Intel CPUs, needs changing for e.g. POWER (128 B).
 #ifdef CACHE_LINE_SIZE_B
   INTEGER, PARAMETER :: CLSIZB = CACHE_LINE_SIZE_B
 #else
   INTEGER, PARAMETER :: CLSIZB = 64
 #endif
 
+  ! Memory page size in bytes (assumed to be a multiple of the cache line size).
+  ! A default for the Intel CPUs is used, needs changing for the other architectures.
+#ifdef PAGE_SIZE_B
+  INTEGER, PARAMETER :: PGSIZB = PAGE_SIZE_B
+#else
+  INTEGER, PARAMETER :: PGSIZB = 4096
+#endif
+
   ! Max SIMD vector length in bytes.
-  ! Valid for Intel AVX-512, otherwise smaller (but >= 16 B).
+  ! Valid for the Intel AVX-512, otherwise smaller (but >= 16 B).
 #ifdef SIMD_VEC_LEN_B
   INTEGER, PARAMETER :: SIMDLB = SIMD_VEC_LEN_B
 #else
@@ -70,9 +81,12 @@ MODULE PARAMS
   INTEGER, PARAMETER :: MAXTPC = 64 ! max. number of 1st-level threads
 #endif
 
-  REAL(KIND=SWP), PARAMETER :: S_ZERO  =  0.0E0_SWP
-  REAL(KIND=SWP), PARAMETER :: S_ONE   =  1.0E0_SWP
-  REAL(KIND=SWP), PARAMETER :: S_MONE  = -1.0E0_SWP
+  REAL(KIND=SWP), PARAMETER :: S_ZERO =  0.0_SWP
+  REAL(KIND=SWP), PARAMETER :: S_MZERO= -0.0_SWP
+  REAL(KIND=SWP), PARAMETER :: S_ONE  =  1.0_SWP
+  REAL(KIND=SWP), PARAMETER :: S_MONE = -1.0_SWP
+  REAL(KIND=SWP), PARAMETER :: S_TWO  =  2.0_SWP
+  REAL(KIND=SWP), PARAMETER :: S_MTWO = -2.0_SWP
 
   COMPLEX(KIND=SWP), PARAMETER :: C_ZERO  = (S_ZERO, S_ZERO)
   COMPLEX(KIND=SWP), PARAMETER :: C_ONE   = (S_ONE , S_ZERO)
@@ -80,11 +94,12 @@ MODULE PARAMS
   COMPLEX(KIND=SWP), PARAMETER :: C_IONE  = (S_ZERO, S_ONE )
   COMPLEX(KIND=SWP), PARAMETER :: C_MIONE = (S_ZERO, S_MONE)
 
-  REAL(KIND=DWP), PARAMETER :: D_ZERO =  0.0E0_DWP
-  REAL(KIND=DWP), PARAMETER :: D_ONE  =  1.0E0_DWP
-  REAL(KIND=DWP), PARAMETER :: D_MONE = -1.0E0_DWP
-  REAL(KIND=DWP), PARAMETER :: D_TWO  =  2.0E0_DWP
-  REAL(KIND=DWP), PARAMETER :: D_MTWO = -2.0E0_DWP
+  REAL(KIND=DWP), PARAMETER :: D_ZERO =  0.0_DWP
+  REAL(KIND=DWP), PARAMETER :: D_MZERO= -0.0_DWP
+  REAL(KIND=DWP), PARAMETER :: D_ONE  =  1.0_DWP
+  REAL(KIND=DWP), PARAMETER :: D_MONE = -1.0_DWP
+  REAL(KIND=DWP), PARAMETER :: D_TWO  =  2.0_DWP
+  REAL(KIND=DWP), PARAMETER :: D_MTWO = -2.0_DWP
 
   REAL(KIND=DWP), PARAMETER :: D_CS_PI_4 = SCALE(SQRT(D_TWO), -1)
 
