@@ -302,11 +302,11 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,CPR,&
                     DO J = 1, L
                        ZTMP1(J,R) = S(I+(J-1),P)
                        ZTMP2(J,R) = S(I+(J-1),Q)
-                       !DBLE(DCONJG(ZTMP1(J))*ZTMP1(J))
+                       !REAL(CONJG(ZTMP1(J))*ZTMP1(J))
                        DTMP1(J,R) = DTMP1(J,R) + (REAL(ZTMP1(J,R))*REAL(ZTMP1(J,R)) + AIMAG(ZTMP1(J,R))*AIMAG(ZTMP1(J,R)))
-                       !DBLE(DCONJG(ZTMP2(J))*ZTMP2(J))
+                       !REAL(CONJG(ZTMP2(J))*ZTMP2(J))
                        DTMP2(J,R) = DTMP2(J,R) + (REAL(ZTMP2(J,R))*REAL(ZTMP2(J,R)) + AIMAG(ZTMP2(J,R))*AIMAG(ZTMP2(J,R)))
-                       ! += DCONJG(ZTMP1(J)) * ZTMP2(J)
+                       ! += CONJG(ZTMP1(J)) * ZTMP2(J)
                        DTMP3(J,R) = DTMP3(J,R) + (REAL(ZTMP1(J,R))*REAL(ZTMP2(J,R)) + AIMAG(ZTMP1(J,R))*AIMAG(ZTMP2(J,R)))
                        DTMP4(J,R) = DTMP4(J,R) + (REAL(ZTMP1(J,R))*AIMAG(ZTMP2(J,R))- AIMAG(ZTMP1(J,R))*REAL(ZTMP2(J,R)))
                     END DO
@@ -578,10 +578,10 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,CPR,&
                  DTMP1(PIX,R) = CPHI(PIX,R)
                  IF (.NOT. (ABS(RE_MBSPSI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_21)| overflow or NaN.'
                  IF (.NOT. (ABS(IM_MBSPSI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Im(F_21)| overflow or NaN.'
-                 ZTMP1(PIX,R) = DCMPLX(RE_MBSPSI(PIX,R), IM_MBSPSI(PIX,R))
+                 ZTMP1(PIX,R) = CMPLX(RE_MBSPSI(PIX,R), IM_MBSPSI(PIX,R), DWP)
                  IF (.NOT. (ABS(RE_ASPHI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Re(F_12)| overflow or NaN.'
                  IF (.NOT. (ABS(IM_ASPHI(PIX,R)) .LE. HUGE(D_ZERO))) STOP 'XHZL1: |Im(F_12)| overflow or NaN.'
-                 ZTMP2(PIX,R) = DCMPLX(RE_ASPHI(PIX,R), IM_ASPHI(PIX,R))
+                 ZTMP2(PIX,R) = CMPLX(RE_ASPHI(PIX,R), IM_ASPHI(PIX,R), DWP)
                  IF (.NOT. (CPSI(PIX,R) .LE. HUGE(D_ZERO))) STOP 'XHZL1: F_22 overflow or NaN.'
                  DTMP2(PIX,R) = CPSI(PIX,R)
                  IF (DHZ(PIX,R) .GT. D_ZERO) LNROT(2) = LNROT(2) + 1
