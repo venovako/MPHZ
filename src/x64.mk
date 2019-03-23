@@ -16,7 +16,7 @@ ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
-C11FLAGS=$(CPUFLAGS) -DVN_INTEGER_KIND=8 -std=c11
+C11FLAGS=$(CPUFLAGS) -std=c11
 ifdef NDEBUG
 OPTFLAGS=-O$(NDEBUG) -xHost
 DBGFLAGS=-DNDEBUG -qopt-report=5 -traceback -diag-disable=10397
