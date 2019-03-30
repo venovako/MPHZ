@@ -3,8 +3,8 @@ ARCH=$(shell uname)
 RM=rm -rfv
 AR=xiar
 ARFLAGS=-qnoipo -lib rsv
-FC=ifort
 CC=icc
+FC=ifort
 CPUFLAGS=-DUSE_INTEL -DUSE_X200 -fexceptions
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
