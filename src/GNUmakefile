@@ -9,7 +9,7 @@ MKFS=GNUmakefile $(CPU).mk
 all: libMPHZ.a hzl1sa.exe
 
 help:
-	@echo 'gmake [CPU=x64|x200|gnu] [NDEBUG=0|1|2|3|4|5] [KIND_SINGLE=4|8|10|16] [KIND_DOUBLE=4|8|10|16] [KIND_FILE=4|8|10|16] [all|clean|help]'
+	@echo 'gmake [CPU=x64|x200|pgi|gnu] [NDEBUG=0|1|2|3|4|5] [KIND_SINGLE=4|8|10|16] [KIND_DOUBLE=4|8|10|16] [KIND_FILE=4|8|10|16] [all|clean|help]'
 	@echo 'If CPU is defined, Intel Fortran compiler will be used and KIND(s) cannot be set to 10.'
 	@echo 'If CPU is not defined, GNU Fortran compiler will be used and KIND(s) can be set to 10.'
 	@echo 'KIND_SINGLE specifies a memory data type.'
