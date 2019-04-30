@@ -8,14 +8,14 @@ FORFLAGS=$(CPUFLAGS) -i8 -Mdclchk -Mlarge_arrays -Mrecursive -Mstack_arrays
 C11FLAGS=$(CPUFLAGS) -c11
 CC=pgcc
 FC=pgfortran
+FPUFLAGS=-Kieee -Mfma -Mnodaz -Mnoflushz -Mnofpapprox -Mnofprelaxed
 ifdef NDEBUG
 OPTFLAGS=-O$(NDEBUG)
-DBGFLAGS=-DNDEBUG -Minfo
 OPTFFLAGS=$(OPTFLAGS)
 OPTCFLAGS=$(OPTFLAGS)
+DBGFLAGS=-DNDEBUG -Minfo
 DBGFFLAGS=$(DBGFLAGS)
 DBGCFLAGS=$(DBGFLAGS)
-FPUFLAGS=-Kieee -Mfma -Mnodaz -Mnoflushz -Mnofpapprox -Mnofprelaxed
 FPUFFLAGS=$(FPUFLAGS)
 FPUCFLAGS=$(FPUFLAGS)
 else # DEBUG
@@ -25,11 +25,10 @@ OPTCFLAGS=$(OPTFLAGS)
 DBGFLAGS=-g -Minfo -Mbounds -Mchkstk -traceback
 DBGFFLAGS=$(DBGFLAGS)
 DBGCFLAGS=$(DBGFLAGS)
-FPUFLAGS=-Kieee -Mfma -Mnodaz -Mnoflushz -Mnofpapprox -Mnofprelaxed
 FPUFFLAGS=$(FPUFLAGS)
 FPUCFLAGS=$(FPUFLAGS)
 endif # ?NDEBUG
-LIBFLAGS=-D_GNU_SOURCE -I.
-LDFLAGS=-L${HOME}/lapack -ltmglib -llapack -lrefblas -lpthread -lm -ldl
+LIBFLAGS=-I.
+LDFLAGS=-lpthread -lm -ldl
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
 CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C11FLAGS) $(FPUCFLAGS)
