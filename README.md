@@ -19,6 +19,9 @@ cd src
 make help
 ```
 
+GNU Fortran 9 is *not* supported!
+PGI compilers are supported only in their non-LLVM versions.
+
 ## Execution
 
 ### Command line
