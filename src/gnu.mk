@@ -3,7 +3,7 @@ ARCH=$(shell uname)
 RM=rm -rfv
 AR=ar
 ARFLAGS=rsv
-CPUFLAGS=-DUSE_GNU -DUSE_X64
+CPUFLAGS=-DUSE_GNU -DUSE_X64 -fexceptions
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -17,7 +17,7 @@ FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fopenmp -
 C11FLAGS=$(CPUFLAGS) #-std=gnu17
 ifeq ($(ARCH),Darwin)
 CC=clang
-FC=gfortran
+FC=gfortran-8
 C11FLAGS += -pthread
 else # Linux
 CC=gcc
