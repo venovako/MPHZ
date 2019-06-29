@@ -20,22 +20,22 @@ help:
 	@echo 'If NDEBUG is not defined, a debug build will proceed.'
 
 hzl1sa.exe: hzl1sa.o libMPHZ.a ../../JACSD/libjstrat.a ../../JACSD/libvn.a $(MKFS)
-	$(FC) $(FFLAGS) hzl1sa.o -o$@ -L. -lMPHZ -L../../JACSD -ljstrat -lvn $(LDFLAGS)
+	$(FC) $(FFLAGS) hzl1sa.o -o$@ -L. -lMPHZ -L../../JACSD -ljstrat $(LDFLAGS)
 
-hzl1sa.o: hzl1sa.F90 binio.mod params.mod xhz.mod $(MKFS)
-	$(FC) $(FFLAGS) -I../../JACSD/jstrat -I../../JACSD/vn -c hzl1sa.F90
+hzl1sa.o: hzl1sa.F90 binio.mod params.mod xhz.mod ../../JACSD/jstrat/jstrat_f.mod $(MKFS)
+	$(FC) -I../../JACSD/jstrat $(FFLAGS) -c hzl1sa.F90
 
 libMPHZ.a: params.o binio.o xhz.o $(MKFS)
 	$(AR) $(ARFLAGS) $@ params.o binio.o xhz.o
 
 params.o params.mod: params.F90 ../../JACSD/vn/vn_types_f.mod ../../JACSD/vn/vn_params.F90 $(MKFS)
-	$(FC) $(FFLAGS) -I../../JACSD/vn -c params.F90
+	$(FC) $(FFLAGS) -c params.F90
 
 binio.o binio.mod: binio.F90 params.mod $(MKFS)
-	$(FC) $(FFLAGS) -I../../JACSD/vn -c binio.F90
+	$(FC) $(FFLAGS) -c binio.F90
 
 xhz.o xhz.mod: xhz.F90 xvrotm.F90 xhzl1sa.F90 params.mod ../../JACSD/jstrat/jstrat_f.mod $(MKFS)
-	$(FC) $(FFLAGS) -I../../JACSD/jstrat -I../../JACSD/vn -c xhz.F90
+	$(FC) -I../../JACSD/jstrat $(FFLAGS) -c xhz.F90
 
 clean:
 	-$(RM) *.exe

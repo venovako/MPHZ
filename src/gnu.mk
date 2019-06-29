@@ -13,6 +13,9 @@ endif # KIND_DOUBLE
 ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
+ifdef PROFILE
+CPUFLAGS += -DVN_PROFILE=$(PROFILE) -finstrument-functions
+endif # PROFILE
 FORFLAGS=-cpp $(CPUFLAGS) -fdefault-integer-8 -ffree-line-length-none -fopenmp -fstack-arrays #-DHAVE_IMAGINARY
 C11FLAGS=$(CPUFLAGS) #-std=gnu17
 ifeq ($(ARCH),Darwin)
@@ -59,7 +62,7 @@ FPUFLAGS=-ffp-contract=fast
 FPUFFLAGS=$(FPUFLAGS) -ffpe-trap=invalid,zero,overflow
 FPUCFLAGS=$(FPUFLAGS)
 endif # ?NDEBUG
-LIBFLAGS=-I.
-LDFLAGS=-lpthread -lm -ldl
+LIBFLAGS=-I. -I../../JACSD/vn
+LDFLAGS=-L../../JACSD -lvn -lpthread -lm -ldl
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
 CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C11FLAGS) $(FPUCFLAGS)

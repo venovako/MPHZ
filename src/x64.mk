@@ -5,7 +5,7 @@ AR=xiar
 ARFLAGS=-qnoipo -lib rsv
 CC=icc
 FC=ifort
-CPUFLAGS=-DUSE_INTEL -DUSE_X64 -fexceptions
+CPUFLAGS=-DUSE_INTEL -DUSE_X64 -fexceptions -qopenmp
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -15,6 +15,9 @@ endif # KIND_DOUBLE
 ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
+ifdef PROFILE
+CPUFLAGS += -DVN_PROFILE=$(PROFILE) -finstrument-functions
+endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
 C11FLAGS=$(CPUFLAGS) -std=c11
 ifdef NDEBUG
@@ -39,7 +42,7 @@ FPUCFLAGS=$(FPUFLAGS)
 endif # ?NDEBUG
 OPTFFLAGS=$(OPTFLAGS)
 OPTCFLAGS=$(OPTFLAGS)
-LIBFLAGS=-qopenmp
-LDFLAGS=-lpthread -lm -ldl
+LIBFLAGS=-I. -I../../JACSD/vn
+LDFLAGS=-L../../JACSD -lvn -lpthread -lm -ldl
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
 CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C11FLAGS) $(FPUCFLAGS)
