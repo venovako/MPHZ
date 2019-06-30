@@ -35,3 +35,7 @@
 *.dSYM
 *.optrpt
 .svn
+
+# Output
+*.pt
+*.bt
