@@ -1,4 +1,9 @@
 SHELL=/bin/bash
+ifdef NDEBUG
+DEBUG=
+else # DEBUG
+DEBUG=g
+endif # ?NDEBUG
 ARCH=$(shell uname)
 RM=rm -rfv
 AR=xiar
@@ -30,7 +35,7 @@ FPUFFLAGS=$(FPUFLAGS)
 FPUCFLAGS=$(FPUFLAGS)
 else # DEBUG
 OPTFLAGS=-O0 -xHost
-DBGFLAGS=-g -debug emit_column -debug extended -debug inline-debug-info -debug pubnames -traceback -diag-disable=10397
+DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug pubnames -traceback -diag-disable=10397
 ifneq ($(ARCH),Darwin) # Linux
 DBGFLAGS += -debug parallel
 endif # ?Linux
@@ -43,6 +48,6 @@ endif # ?NDEBUG
 OPTFFLAGS=$(OPTFLAGS)
 OPTCFLAGS=$(OPTFLAGS)
 LIBFLAGS=-I. -I../../JACSD/vn
-LDFLAGS=-L../../JACSD -lvn$(PROFILE) -lpthread -lm -ldl
+LDFLAGS=-L../../JACSD -lvn$(PROFILE)$(DEBUG) -lpthread -lm -ldl
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
 CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C11FLAGS) $(FPUCFLAGS)
