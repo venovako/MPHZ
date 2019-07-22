@@ -1,7 +1,7 @@
 # MPHZ
 A multi-precision Hari-Zimmermann complex GSVD.
 
-A supplementary material for the paper [arXiv:1907.08560](https://arxiv.org/abs/1907.08560).
+A part of the supplementary material for the paper arXiv:[1907.08560](https://arxiv.org/abs/1907.08560) \[math.NA\].
 
 ## Building
 
@@ -22,7 +22,7 @@ make help
 ```
 
 GNU Fortran 9 is *not* supported!
-PGI compilers are supported only in their non-LLVM versions.
+Currently, only GPU Fortran *8* is fully supported.
 
 ## Execution
 
