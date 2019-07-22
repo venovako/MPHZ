@@ -1,6 +1,8 @@
 # MPHZ
 A multi-precision Hari-Zimmermann complex GSVD.
 
+A supplementary material for the paper [arXiv:1907.08560](https://arxiv.org/abs/1907.08560).
+
 ## Building
 
 ### Prerequisites
