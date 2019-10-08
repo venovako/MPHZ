@@ -7,7 +7,7 @@ A part of the supplementary material for the paper arXiv:[1907.08560](https://ar
 
 ### Prerequisites
 
-A recent 64-bit Linux (e.g., CentOS 7.6) or macOS (e.g., Mojave) is needed.
+A recent 64-bit Linux (e.g., CentOS 7.7 with devtoolset-8) or macOS (e.g., Catalina) is needed.
 
 Have the Intel MKL (Math Kernel Library) installed.
 
@@ -22,7 +22,9 @@ make help
 ```
 
 GNU Fortran 9 is *not* supported!
+Please take a look [here](https://gcc.gnu.org/gcc-9/changes.html) for the explanation regarding the MAX and MIN intrinsics.
 Currently, only GPU Fortran *8* is fully supported.
+On RHEL/CentOS it is provided by, e.g., devtoolset-8.
 
 ## Execution
 
