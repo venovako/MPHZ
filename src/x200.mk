@@ -1,16 +1,16 @@
 SHELL=/bin/bash
+ARCH=$(shell uname)
 ifdef NDEBUG
 DEBUG=
 else # DEBUG
 DEBUG=g
 endif # ?NDEBUG
-ARCH=$(shell uname)
 RM=rm -rfv
 AR=xiar
 ARFLAGS=-qnoipo -lib rsv
 CC=icc
 FC=ifort
-CPUFLAGS=-DUSE_INTEL -DUSE_X200 -fexceptions -qopenmp
+CPUFLAGS=-DUSE_INTEL -DUSE_X200 -fPIC -fexceptions -fno-omit-frame-pointer -qopenmp -rdynamic
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -21,7 +21,7 @@ ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
 ifdef PROFILE
-CPUFLAGS += -DVN_PROFILE=$(PROFILE) -fPIC -fno-inline -fno-omit-frame-pointer -finstrument-functions -rdynamic
+CPUFLAGS += -DVN_PROFILE=$(PROFILE) -fno-inline -finstrument-functions
 endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
 C11FLAGS=$(CPUFLAGS) -std=c11
