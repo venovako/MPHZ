@@ -62,11 +62,7 @@ endif # ?NDEBUG
 LIBFLAGS=-I. -I../../JACSD/vn
 LDFLAGS=-L../../JACSD -lvn$(PROFILE)$(DEBUG)
 ifndef NDEBUG
-ifeq ($(ARCH),Darwin)
 LDFLAGS += -lubsan
-else # Linux
-$(error debug build currently not possible with RH devtoolset)
-endif # ?Darwin
 endif # DEBUG
 LDFLAGS += -lpthread -lm -ldl $(shell if [ -L /usr/lib64/libmemkind.so ]; then echo '-lmemkind'; fi)
 FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
