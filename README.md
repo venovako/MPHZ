@@ -1,7 +1,7 @@
 # MPHZ
 A multi-precision Hari-Zimmermann complex GSVD.
 
-A part of the supplementary material for the paper arXiv:[1907.08560](https://arxiv.org/abs/1907.08560) \[math.NA\].
+A part of the supplementary material for the paper arXiv:[1907.08560](https://arxiv.org/abs/1907.08560 "The LAPW method with eigendecomposition based on the Hari–Zimmermann generalized hyperbolic SVD") \[math.NA\].
 
 ## Building
 
