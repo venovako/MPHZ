@@ -26,7 +26,7 @@ endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
 C18FLAGS=$(CPUFLAGS) -std=c18
 ifdef NDEBUG
-OPTFLAGS=-O$(NDEBUG) -xHost
+OPTFLAGS=-O$(NDEBUG) -xHost -qopt-zmm-usage=high
 DBGFLAGS=-DNDEBUG -qopt-report=5 -traceback -diag-disable=10397
 DBGFFLAGS=$(DBGFLAGS)
 DBGCFLAGS=$(DBGFLAGS) -w3 -diag-disable=1572,2547
@@ -34,7 +34,7 @@ FPUFLAGS=-fma -fp-model source -no-ftz -no-complex-limited-range -no-fast-transc
 FPUFFLAGS=$(FPUFLAGS)
 FPUCFLAGS=$(FPUFLAGS)
 else # DEBUG
-OPTFLAGS=-O0 -xHost
+OPTFLAGS=-O0 -xHost -qopt-zmm-usage=high
 DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -traceback -diag-disable=10397
 DBGFFLAGS=$(DBGFLAGS) -debug-parameters all -check all -warn all
 DBGCFLAGS=$(DBGFLAGS) -check=stack,uninit -w3 -diag-disable=1572,2547
