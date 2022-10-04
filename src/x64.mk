@@ -47,7 +47,7 @@ ifdef NDEBUG
 OPTFLAGS=-O$(NDEBUG) -xHost -qopt-multi-version-aggressive -vec-threshold0
 DBGFLAGS=-DNDEBUG -qopt-report=5 -traceback -diag-disable=10397
 DBGFFLAGS=$(DBGFLAGS)
-DBGCFLAGS=$(DBGFLAGS) -w3 -diag-disable=1572,2547
+DBGCFLAGS=$(DBGFLAGS) -w3 -diag-disable=1572,2547,10441
 else # DEBUG
 OPTFLAGS=-O0 -xHost -qopt-multi-version-aggressive
 DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug pubnames -traceback -diag-disable=10397
@@ -55,7 +55,7 @@ ifneq ($(ARCH),Darwin)
 DBGFLAGS += -debug parallel
 endif # Linux
 DBGFFLAGS=$(DBGFLAGS) -debug-parameters all -check all -warn all
-DBGCFLAGS=$(DBGFLAGS) -check=stack,uninit -w3 -diag-disable=1572,2547
+DBGCFLAGS=$(DBGFLAGS) -check=stack,uninit -w3 -diag-disable=1572,2547,10441
 endif # ?NDEBUG
 OPTFFLAGS=$(OPTFLAGS)
 OPTCFLAGS=$(OPTFLAGS)
