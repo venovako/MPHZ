@@ -31,32 +31,22 @@ ifdef PROFILE
 CPUFLAGS += -DVN_PROFILE=$(PROFILE) -fno-inline -finstrument-functions
 endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
-C18FLAGS=$(CPUFLAGS) -std=c18
 FPUFLAGS=-fp-model $(FP) -fprotect-parens -fma -no-ftz -no-complex-limited-range -no-fast-transcendentals -prec-div -prec-sqrt
 ifeq ($(FP),strict)
 FPUFLAGS += -fp-stack-check
 else # !strict
 FPUFLAGS += -fimf-use-svml=true
 endif # ?strict
-FPUFFLAGS=$(FPUFLAGS)
-FPUCFLAGS=$(FPUFLAGS)
 ifeq ($(FP),strict)
-FPUFFLAGS += -assume ieee_fpe_flags
+FPUFLAGS += -assume ieee_fpe_flags
 endif # strict
 ifdef NDEBUG
 OPTFLAGS=-O$(NDEBUG) -xHost -qopt-multi-version-aggressive -qopt-zmm-usage=high -vec-threshold0
 DBGFLAGS=-DNDEBUG -qopt-report=5 -traceback -diag-disable=10397
-DBGFFLAGS=$(DBGFLAGS)
-DBGCFLAGS=$(DBGFLAGS) -w3 -diag-disable=1572,2547
 else # DEBUG
 OPTFLAGS=-O0 -xHost -qopt-multi-version-aggressive -qopt-zmm-usage=high
-DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -traceback -diag-disable=10397
-DBGFFLAGS=$(DBGFLAGS) -debug-parameters all -check all -warn all
-DBGCFLAGS=$(DBGFLAGS) -check=stack,uninit -w3 -diag-disable=1572,2547
+DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -traceback -diag-disable=10397 -debug-parameters all -check all -warn all
 endif # ?NDEBUG
-OPTFFLAGS=$(OPTFLAGS)
-OPTCFLAGS=$(OPTFLAGS)
 LIBFLAGS=-static-libgcc -I. -I../../JACSD/vn
 LDFLAGS=-L../../JACSD -lvn$(PROFILE)$(DEBUG) -lpthread -lm -ldl -lmemkind
-FFLAGS=$(OPTFFLAGS) $(DBGFFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFFLAGS)
-CFLAGS=$(OPTCFLAGS) $(DBGCFLAGS) $(LIBFLAGS) $(C18FLAGS) $(FPUCFLAGS)
+FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)

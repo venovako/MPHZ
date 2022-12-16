@@ -374,7 +374,7 @@ SUBROUTINE XHZL1SA(M,N, H,LDH, JVEC, S,LDS, Z,LDZ, JS,JSPAIR, NSWP,CPR,&
 
                  DO I = 1, M, DSIMDL
                     L = MIN(DSIMDL, M-(I-1))
-                    !DIR$ VECTOR ALWAYS ASSERT,ALIGNED
+                    !DIR$ VECTOR ALWAYS ALIGNED
                     DO J = 1, L
                        ZTMP1(J,R) = H(I+(J-1),P)
                        ZTMP2(J,R) = H(I+(J-1),Q)

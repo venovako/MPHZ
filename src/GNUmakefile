@@ -9,7 +9,7 @@ MKFS=GNUmakefile $(COMPILER).mk
 all: libMPHZ$(PROFILE)$(DEBUG).a hzl1sa.exe
 
 help:
-	@echo 'gmake [COMPILER=x64|x200] [NDEBUG=0|1|2|3|4|5] [KIND_SINGLE=4|8|10|16] [KIND_DOUBLE=4|8|10|16] [KIND_FILE=4|8|10|16] [all|clean|help]'
+	@echo 'gmake [COMPILER=x64|x64x|x200] [NDEBUG=0|1|2|3|4|5] [KIND_SINGLE=4|8|10|16] [KIND_DOUBLE=4|8|10|16] [KIND_FILE=4|8|10|16] [all|clean|help]'
 	@echo 'If COMPILER is defined, Intel Fortran compiler will be used and KIND(s) cannot be set to 10.'
 	@echo 'If COMPILER is not defined, GNU Fortran compiler will be used and KIND(s) can be set to 10.'
 	@echo 'KIND_SINGLE specifies a memory data type.'
@@ -43,6 +43,7 @@ clean:
 	-$(RM) *.o
 	-$(RM) *.a
 	-$(RM) *.optrpt
+	-$(RM) *.opt.yaml
 	-$(RM) *__genmod.f90
 	-$(RM) *__genmod.mod
 	-$(RM) *.dSYM
