@@ -34,6 +34,7 @@
 # Other
 *.dSYM
 *.optrpt
+*.opt.yaml
 .svn
 
 # Output
