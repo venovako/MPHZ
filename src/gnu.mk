@@ -38,19 +38,14 @@ DBGFLAGS += -Wno-compare-reals -Warray-temporaries -Wcharacter-truncation -Wimpl
 FPUFLAGS=-ffp-contract=fast
 else # DEBUG
 OPTFLAGS=-O$(DEBUG) -march=native
-DBGFLAGS=-$(DEBUG) -fsanitize=address -pedantic -Wall -Wextra
+DBGFLAGS=-$(DEBUG) -pedantic -Wall -Wextra
 ifeq ($(ARCH),Darwin)
 OPTFLAGS += -Wa,-q
-else # Linux
-DBGFLAGS += -fsanitize=leak
 endif # ?Darwin
 DBGFLAGS += -fcheck=array-temps -finit-local-zero -finit-real=snan -finit-derived -Wno-compare-reals -Warray-temporaries -Wcharacter-truncation -Wimplicit-procedure -Wfunction-elimination -Wrealloc-lhs-all #-fcheck=all
 FPUFLAGS=-ffp-contract=fast #-ffpe-trap=invalid,zero,overflow
 endif # ?NDEBUG
 LIBFLAGS=-I. -I../../JACSD/vn
 LDFLAGS=-L../../JACSD -lvn$(PROFILE)$(DEBUG)
-ifndef NDEBUG
-LDFLAGS += -lubsan
-endif # DEBUG
 LDFLAGS += -lpthread -lm -ldl $(shell if [ -L /usr/lib64/libmemkind.so ]; then echo '-lmemkind'; fi)
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)
