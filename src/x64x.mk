@@ -26,9 +26,9 @@ ifdef PROFILE
 CPUFLAGS += -DVN_PROFILE=$(PROFILE) -fno-inline -finstrument-functions
 endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
-FPUFLAGS=-fp-model $(FP) -fprotect-parens -no-ftz
+FPUFLAGS=-fp-model $(FP) -fma -fprotect-parens -no-ftz
 ifneq ($(FP),strict)
-FPUFLAGS += -fma -fimf-use-svml=true
+FPUFLAGS += -fimf-use-svml=true
 endif # !strict
 ifeq ($(FP),strict)
 FPUFLAGS += -assume ieee_fpe_flags
