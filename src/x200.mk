@@ -27,9 +27,6 @@ endif # KIND_DOUBLE
 ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
-ifdef PROFILE
-CPUFLAGS += -DVN_PROFILE=$(PROFILE) -fno-inline -finstrument-functions
-endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
 FPUFLAGS=-fp-model $(FP) -fprotect-parens -fma -no-ftz -no-complex-limited-range -no-fast-transcendentals -prec-div -prec-sqrt
 ifeq ($(FP),strict)
@@ -48,5 +45,5 @@ OPTFLAGS=-O0 -xHost -qopt-multi-version-aggressive -qopt-zmm-usage=high
 DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -traceback -diag-disable=10397 -debug-parameters all -check all -warn all
 endif # ?NDEBUG
 LIBFLAGS=-static-libgcc -I. -I../../JACSD/vn
-LDFLAGS=-L../../JACSD -lvn$(PROFILE)$(DEBUG) -lpthread -lm -ldl -lmemkind
+LDFLAGS=-L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl -lmemkind
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)

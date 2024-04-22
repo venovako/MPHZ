@@ -26,9 +26,6 @@ endif # KIND_DOUBLE
 ifdef KIND_FILE
 CPUFLAGS += -DKIND_FILE=$(KIND_FILE)
 endif # KIND_FILE
-ifdef PROFILE
-CPUFLAGS += -DVN_PROFILE=$(PROFILE) -fno-inline -finstrument-functions
-endif # PROFILE
 FORFLAGS=$(CPUFLAGS) -i8 -standard-semantics -threads
 FPUFLAGS=-fp-model $(FP) -fprotect-parens -fma -no-ftz -no-complex-limited-range -no-fast-transcendentals -prec-div -prec-sqrt
 ifeq ($(FP),strict)
@@ -54,5 +51,5 @@ LIBFLAGS=-I. -I../../JACSD/vn
 ifneq ($(ARCH),Darwin)
 LIBFLAGS += -static-libgcc -D_GNU_SOURCE
 endif # Linux
-LDFLAGS=-L../../JACSD -lvn$(PROFILE)$(DEBUG) -lpthread -lm -ldl
+LDFLAGS=-L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)

@@ -6,7 +6,7 @@ MKFS=GNUmakefile $(COMPILER).mk
 
 .PHONY: all help clean
 
-all: libMPHZ$(PROFILE)$(DEBUG).a hzl1sa.exe
+all: libMPHZ$(DEBUG).a hzl1sa.exe
 
 help:
 	@echo 'gmake [COMPILER=x64|x64x|x200] [NDEBUG=0|1|2|3|4|5] [KIND_SINGLE=4|8|10|16] [KIND_DOUBLE=4|8|10|16] [KIND_FILE=4|8|10|16] [all|clean|help]'
@@ -19,13 +19,13 @@ help:
 	@echo 'If NDEBUG is defined, a release build will proceed, with the optimisation level set to $$(NDEBUG).'
 	@echo 'If NDEBUG is not defined, a debug build will proceed.'
 
-hzl1sa.exe: hzl1sa.o libMPHZ$(PROFILE)$(DEBUG).a ../../JACSD/libjstrat$(PROFILE)$(DEBUG).a ../../JACSD/libvn$(PROFILE)$(DEBUG).a $(MKFS)
-	$(FC) $(FFLAGS) hzl1sa.o -o$@ -L. -lMPHZ$(PROFILE)$(DEBUG) -L../../JACSD -ljstrat$(PROFILE)$(DEBUG) $(LDFLAGS)
+hzl1sa.exe: hzl1sa.o libMPHZ$(DEBUG).a ../../JACSD/libjstrat$(DEBUG).a ../../JACSD/libvn$(DEBUG).a $(MKFS)
+	$(FC) $(FFLAGS) hzl1sa.o -o$@ -L. -lMPHZ$(DEBUG) -L../../JACSD -ljstrat$(DEBUG) $(LDFLAGS)
 
 hzl1sa.o: hzl1sa.F90 binio.mod params.mod xhz.mod ../../JACSD/jstrat/jstrat_f.mod $(MKFS)
 	$(FC) -I../../JACSD/jstrat $(FFLAGS) -c hzl1sa.F90
 
-libMPHZ$(PROFILE)$(DEBUG).a: params.o binio.o xhz.o $(MKFS)
+libMPHZ$(DEBUG).a: params.o binio.o xhz.o $(MKFS)
 	$(AR) $(ARFLAGS) $@ params.o binio.o xhz.o
 
 params.o params.mod: params.F90 ../../JACSD/vn/vn_types_f.mod ../../JACSD/vn/vn_params.F90 $(MKFS)
