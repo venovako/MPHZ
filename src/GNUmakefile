@@ -1,5 +1,5 @@
 ifndef COMPILER
-COMPILER=gnu
+COMPILER=x64x
 endif # !COMPILER
 include $(COMPILER).mk
 MKFS=GNUmakefile $(COMPILER).mk

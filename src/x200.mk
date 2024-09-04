@@ -17,7 +17,7 @@ AR=xiar
 ARFLAGS=-qnoipo -lib rsv
 CC=icc
 FC=ifort
-CPUFLAGS=-DUSE_INTEL -DUSE_X200 -fPIC -fexceptions -fno-omit-frame-pointer -qopenmp -rdynamic
+CPUFLAGS=-DUSE_INTEL -DUSE_X200 -fPIC -fexceptions -fno-omit-frame-pointer -qopt-multi-version-aggressive -qopt-zmm-usage=high -vec-threshold0 -qopenmp -rdynamic
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -37,12 +37,13 @@ endif # ?strict
 ifeq ($(FP),strict)
 FPUFLAGS += -assume ieee_fpe_flags
 endif # strict
+DBGFLAGS=-traceback -diag-disable=10397
 ifdef NDEBUG
-OPTFLAGS=-O$(NDEBUG) -xHost -qopt-multi-version-aggressive -qopt-zmm-usage=high -vec-threshold0
-DBGFLAGS=-DNDEBUG -qopt-report=5 -traceback -diag-disable=10397
+OPTFLAGS=-O$(NDEBUG) -xHost
+DBGFLAGS += -DNDEBUG -qopt-report=5
 else # DEBUG
-OPTFLAGS=-O0 -xHost -qopt-multi-version-aggressive -qopt-zmm-usage=high
-DBGFLAGS=-$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -traceback -diag-disable=10397 -debug-parameters all -check all -warn all
+OPTFLAGS=-O0 -xHost
+DBGFLAGS += -$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug parallel -debug pubnames -debug-parameters all -check all -warn all
 endif # ?NDEBUG
 LIBFLAGS=-static-libgcc -I. -I../../JACSD/vn
 LDFLAGS=-L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl -lmemkind

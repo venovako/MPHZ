@@ -8,7 +8,7 @@ endif # ?NDEBUG
 RM=rm -rfv
 AR=ar
 ARFLAGS=rsv
-CPUFLAGS=-DUSE_GNU -DUSE_X64 -fPIC -fexceptions -fno-omit-frame-pointer -fopenmp -rdynamic
+CPUFLAGS=-DUSE_GNU -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -fopenmp -fvect-cost-model=unlimited -march=native -rdynamic
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -25,22 +25,24 @@ GNU=-8
 endif # !GNU
 endif # Darwin
 FC=gfortran$(GNU)
+DBGFLAGS=-Wall -Wextra
+FPUFLAGS=-ffp-contract=fast
 ifdef NDEBUG
-OPTFLAGS=-O$(NDEBUG) -march=native -fgcse-las -fgcse-sm -fipa-pta -ftree-loop-distribution -ftree-loop-im -ftree-loop-ivcanon -fivopts -fvect-cost-model=unlimited -fvariable-expansion-in-unroller
-DBGFLAGS=-DNDEBUG -fopt-info-optimized-vec -pedantic -Wall -Wextra
+OPTFLAGS=-O$(NDEBUG)
+DBGFLAGS += -DNDEBUG
 ifeq ($(ARCH),Darwin)
 OPTFLAGS += -Wa,-q
 endif # Darwin
 DBGFLAGS += -Wno-compare-reals -Warray-temporaries -Wcharacter-truncation -Wimplicit-procedure -Wfunction-elimination -Wrealloc-lhs-all
-FPUFLAGS=-ffp-contract=fast
+FPUFLAGS += -fno-math-errno
 else # DEBUG
-OPTFLAGS=-O$(DEBUG) -march=native
-DBGFLAGS=-$(DEBUG) -pedantic -Wall -Wextra
+OPTFLAGS=-O$(DEBUG)
+DBGFLAGS += -$(DEBUG) -pedantic -Wall -Wextra
 ifeq ($(ARCH),Darwin)
 OPTFLAGS += -Wa,-q
 endif # ?Darwin
 DBGFLAGS += -fcheck=array-temps -finit-local-zero -finit-real=snan -finit-derived -Wno-compare-reals -Warray-temporaries -Wcharacter-truncation -Wimplicit-procedure -Wfunction-elimination -Wrealloc-lhs-all #-fcheck=all
-FPUFLAGS=-ffp-contract=fast #-ffpe-trap=invalid,zero,overflow
+#FPUFLAGS += -ffpe-trap=invalid,zero,overflow
 endif # ?NDEBUG
 LIBFLAGS=-I. -I../../JACSD/vn
 LDFLAGS=-L../../JACSD -lvn$(DEBUG)
