@@ -26,7 +26,7 @@ make help
 Intel C/C++ and Fortran compilers (version 19.1+/2020+) are recommended.
 GNU Fortran 9 and newer are *not* supported!
 Please take a look [here](https://gcc.gnu.org/gcc-9/changes.html) for the explanation regarding the MAX and MIN intrinsics.
-Currently, only GNU Fortran *8* is fully supported.
+Currently, only GNU Fortran *8* is fully supported, by copying ``old/gnu.mk`` to this directory.
 On RHEL/CentOS it is provided by, e.g., devtoolset-8.
 
 ## Execution
