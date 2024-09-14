@@ -8,7 +8,7 @@ endif # ?NDEBUG
 RM=rm -rfv
 AR=ar
 ARFLAGS=rsv
-CPUFLAGS=-DUSE_GNU -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -fvect-cost-model=unlimited -march=native -fopenmp -rdynamic
+CPUFLAGS=-DUSE_GNU -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -fvect-cost-model=unlimited -march=native -fopenmp
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -45,6 +45,6 @@ DBGFLAGS += -fcheck=array-temps -finit-local-zero -finit-real=snan -finit-derive
 #FPUFLAGS += -ffpe-trap=invalid,zero,overflow
 endif # ?NDEBUG
 LIBFLAGS=-I. -I../../JACSD/vn
-LDFLAGS=-L../../JACSD -lvn$(DEBUG)
+LDFLAGS=-rdynamic -static-libgcc -L../../JACSD -lvn$(DEBUG)
 LDFLAGS += -lpthread -lm -ldl $(shell if [ -L /usr/lib64/libmemkind.so ]; then echo '-lmemkind'; fi)
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)
