@@ -31,11 +31,15 @@ ifeq ($(FP),strict)
 FPUFLAGS += -assume ieee_fpe_flags
 endif # strict
 DBGFLAGS=-traceback
+ifndef CPU
+CPU=Host
+# common-avx512 for KNLs
+endif # !CPU
 ifdef NDEBUG
-OPTFLAGS=-O$(NDEBUG) -xHost
+OPTFLAGS=-O$(NDEBUG) -x$(CPU)
 DBGFLAGS += -DNDEBUG -qopt-report=3
 else # DEBUG
-OPTFLAGS=-O0 -xHost
+OPTFLAGS=-O0 -x$(CPU)
 DBGFLAGS += -$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug pubnames
 ifneq ($(ARCH),Darwin)
 DBGFLAGS += -debug parallel
