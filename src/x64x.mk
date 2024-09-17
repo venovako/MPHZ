@@ -12,7 +12,11 @@ RM=rm -rfv
 AR=xiar
 ARFLAGS=-qnoipo -lib rsv
 FC=ifx
-CPUFLAGS=-DUSE_INTEL -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -mprefer-vector-width=512 -vec-threshold0 -qopenmp
+ifndef CPU
+CPU=Host
+# common-avx512 for KNLs
+endif # !CPU
+CPUFLAGS=-DUSE_INTEL -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -mprefer-vector-width=512 -vec-threshold0 -qopenmp -x$(CPU)
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -31,15 +35,11 @@ ifeq ($(FP),strict)
 FPUFLAGS += -assume ieee_fpe_flags
 endif # strict
 DBGFLAGS=-traceback
-ifndef CPU
-CPU=Host
-# common-avx512 for KNLs
-endif # !CPU
 ifdef NDEBUG
-OPTFLAGS=-O$(NDEBUG) -x$(CPU)
+OPTFLAGS=-O$(NDEBUG) -fno-math-errno -inline-level=2
 DBGFLAGS += -DNDEBUG -qopt-report=3
 else # DEBUG
-OPTFLAGS=-O0 -x$(CPU)
+OPTFLAGS=-O0
 DBGFLAGS += -$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug pubnames
 ifneq ($(ARCH),Darwin)
 DBGFLAGS += -debug parallel

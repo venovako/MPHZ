@@ -9,7 +9,7 @@ MKFS=GNUmakefile $(COMPILER).mk
 all: libMPHZ$(DEBUG).a hzl1sa.exe
 
 help:
-	@echo 'gmake [COMPILER=x64x|x200|gnu] [CPU=...] [NDEBUG=optimization_level] [KIND_SINGLE=4|8|16] [KIND_DOUBLE=4|8|16] [KIND_FILE=4|8|16] [all|clean|help]'
+	@echo 'gmake [COMPILER=x64x|x200|x64|gnu] [CPU=...] [NDEBUG=optimization_level] [KIND_SINGLE=4|8|16] [KIND_DOUBLE=4|8|16] [KIND_FILE=4|8|16] [all|clean|help]'
 	@echo 'KIND_SINGLE specifies a memory data type.'
 	@echo 'KIND_DOUBLE specifies an internal arithmetic data type.'
 	@echo 'KIND_FILE specifies a type of the input files (KIND_SINGLE by default).'

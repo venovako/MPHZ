@@ -16,7 +16,11 @@ RM=rm -rfv
 AR=xiar
 ARFLAGS=-qnoipo -lib rsv
 FC=ifort
-CPUFLAGS=-DUSE_INTEL -DUSE_X64 -fPIC -fexceptions -fno-omit-frame-pointer -qopt-multi-version-aggressive -vec-threshold0 -qopenmp -rdynamic
+ifndef CPU
+CPU=Host
+# COMMON-AVX512 for KNLs
+endif # !CPU
+CPUFLAGS=-DUSE_INTEL -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -qopt-multi-version-aggressive -qopt-zmm-usage=high -vec-threshold0 -qopenmp -x$(CPU)
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
@@ -36,12 +40,12 @@ endif # ?strict
 ifeq ($(FP),strict)
 FPUFLAGS += -assume ieee_fpe_flags
 endif # strict
-DBGFLAGS=-traceback -diag-disable=10397
+DBGFLAGS=-traceback -diag-disable=10397,10441
 ifdef NDEBUG
-OPTFLAGS=-O$(NDEBUG) -xHost
+OPTFLAGS=-O$(NDEBUG) -fno-math-errno -inline-level=2
 DBGFLAGS += -DNDEBUG -qopt-report=5
 else # DEBUG
-OPTFLAGS=-O0 -xHost
+OPTFLAGS=-O0
 DBGFLAGS += -$(DEBUG) -debug emit_column -debug extended -debug inline-debug-info -debug pubnames
 ifneq ($(ARCH),Darwin)
 DBGFLAGS += -debug parallel
@@ -49,8 +53,10 @@ endif # Linux
 DBGFLAGS += -debug-parameters all -check all -warn all
 endif # ?NDEBUG
 LIBFLAGS=-I. -I../../JACSD/vn
+LDFLAGS=-rdynamic
 ifneq ($(ARCH),Darwin)
-LIBFLAGS += -static-libgcc -D_GNU_SOURCE
+LIBFLAGS += -D_GNU_SOURCE
+LDFLAGS += -static-libgcc
 endif # Linux
-LDFLAGS=-L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl
+LDFLAGS += -L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)
