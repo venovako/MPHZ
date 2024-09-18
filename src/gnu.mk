@@ -8,7 +8,14 @@ endif # ?NDEBUG
 RM=rm -rfv
 AR=ar
 ARFLAGS=rsv
-CPUFLAGS=-DUSE_GNU -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -fvect-cost-model=unlimited -march=native -fopenmp
+ifndef MARCH
+ifeq ($(shell uname -m),ppc64le)
+MARCH=mcpu=native -mpower8-fusion -mtraceback=full
+else # !ppc64le
+MARCH=march=native
+endif # ?ppc64le
+endif # !MARCH
+CPUFLAGS=-DUSE_GNU -DUSE_X64 -fPIC -fexceptions -fasynchronous-unwind-tables -fno-omit-frame-pointer -fvect-cost-model=unlimited -$(MARCH) -fopenmp
 ifdef KIND_SINGLE
 CPUFLAGS += -DKIND_SINGLE=$(KIND_SINGLE)
 endif # KIND_SINGLE
