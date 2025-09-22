@@ -47,5 +47,5 @@ endif # Linux
 DBGFLAGS += -debug-parameters all -check all -warn all
 endif # ?NDEBUG
 LIBFLAGS=-D_GNU_SOURCE -I. -I../../JACSD/vn
-LDFLAGS=-rdynamic -static-libgcc -L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl
+LDFLAGS=-rdynamic -L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)

@@ -56,7 +56,6 @@ LIBFLAGS=-I. -I../../JACSD/vn
 LDFLAGS=-rdynamic
 ifneq ($(ARCH),Darwin)
 LIBFLAGS += -D_GNU_SOURCE
-LDFLAGS += -static-libgcc
 endif # Linux
 LDFLAGS += -L../../JACSD -lvn$(DEBUG) -lpthread -lm -ldl
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)

@@ -52,6 +52,6 @@ DBGFLAGS += -fcheck=array-temps -finit-local-zero -finit-real=snan -finit-derive
 #FPUFLAGS += -ffpe-trap=invalid,zero,overflow
 endif # ?NDEBUG
 LIBFLAGS=-I. -I../../JACSD/vn
-LDFLAGS=-rdynamic -static-libgcc -static-libgfortran -static-libquadmath -L../../JACSD -lvn$(DEBUG)
+LDFLAGS=-rdynamic -L../../JACSD -lvn$(DEBUG)
 LDFLAGS += -lpthread -lm -ldl $(shell if [ -L /usr/lib64/libmemkind.so ]; then echo '-lmemkind'; fi)
 FFLAGS=$(OPTFLAGS) $(DBGFLAGS) $(LIBFLAGS) $(FORFLAGS) $(FPUFLAGS)
